@@ -16,8 +16,24 @@
 
 package uk.gov.hmrc.api.specs
 
+import org.scalatest.{BeforeAndAfterEach, GivenWhenThen}
+import org.scalatest.concurrent.Eventually
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.GivenWhenThen
+import org.scalatest.time.{Millis, Seconds, Span}
 
-trait BaseSpec extends AnyFeatureSpec with GivenWhenThen with Matchers {}
+trait BaseSpec extends AnyFeatureSpec with GivenWhenThen with Matchers with Eventually with BeforeAndAfterEach {
+
+  // This configuration determines how long `eventually` will wait for its assertions to become true
+  override implicit val patienceConfig: PatienceConfig =
+    PatienceConfig(
+      timeout = Span(30, Seconds),
+      interval = Span(500, Millis)
+    )
+
+  override protected def beforeEach(): Unit =
+    super.beforeEach()
+
+  override protected def afterEach(): Unit =
+    super.afterEach()
+}
