@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.api.services
 
+import uk.gov.hmrc.api.models.AuthStubRequest
 import uk.gov.hmrc.http.client.HttpClientV2
 
 import javax.inject.Inject
@@ -33,6 +34,11 @@ class ServiceFactory @Inject() (
 
   def getBearerToken =
     authService.getBearerToken()
+
+  def getBearerToken(
+    request: AuthStubRequest
+  ) =
+    authService.getBearerToken(request)
 
   def submitMessage(
     xml: String,
@@ -52,6 +58,15 @@ class ServiceFactory @Inject() (
     bearerToken: String
   ) =
     aesService.getSubmissions(
+      bearerToken
+    )
+
+  def getSubmission(
+    submissionId: String,
+    bearerToken: String
+  ) =
+    aesService.getSubmission(
+      submissionId,
       bearerToken
     )
 }

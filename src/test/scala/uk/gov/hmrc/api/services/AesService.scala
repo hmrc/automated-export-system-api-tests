@@ -27,8 +27,11 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class AesService(client: HttpClientV2)(implicit ec: ExecutionContext) {
 
+  private val baseUrl =
+    TestEnvironment.url("aes")
+
   private val aesUrl =
-    s"${TestEnvironment.url("aes")}/message"
+    s"$baseUrl/message"
 
   def submitMessage(
     xml: String,
@@ -77,7 +80,22 @@ class AesService(client: HttpClientV2)(implicit ec: ExecutionContext) {
       )
 
     client
-      .get(URI.create(s"${TestEnvironment.url("aes")}/submissions").toURL)
+      .get(URI.create(s"$baseUrl/submissions").toURL)
+      .execute[HttpResponse]
+  }
+
+  def getSubmission(
+    submissionId: String,
+    bearerToken: String
+  ): Future[HttpResponse] = {
+
+    implicit val hc: HeaderCarrier =
+      HeaderCarrier(
+        authorization = Some(Authorization(s"Bearer $bearerToken"))
+      )
+
+    client
+      .get(URI.create(s"$baseUrl/submission/$submissionId").toURL)
       .execute[HttpResponse]
   }
 }
