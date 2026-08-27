@@ -1,34 +1,33 @@
-**This is the template README. Please update this with project specific content.**
-
 # automated-export-system-api-tests
 
-<SERVICE_NAME> API tests.
+API test suite for the automated-export-system service.
 
-## Pre-requisites
+This repository contains Scala/ScalaTest API integration tests covering the
+Automated Export System (AES) services.
 
-### Services
+## Prerequisites
 
-Start Mongo Docker container as follows:
+- [Service Manager 2](https://github.com/hmrc/service-manager)
+- sbt
+- JDK 11+
 
-```bash
-docker run --rm -d -p 27017:27017 --name mongo percona/percona-server-mongodb:6.0
-```
+## Running the tests locally
 
-Start `<SERVICE_MANAGER_PROFILE>` services as follows:
-
-```bash
-sm2 --start <SERVICE_MANAGER_PROFILE>
-```
-
-## Tests
-
-Run tests as follows:
-
-* Argument `<environment>` must be `local`, `dev`, `qa` or `staging`.
+Start the required services using Service Manager 2:
 
 ```bash
-./run-tests.sh <environment>
+sm2 --start AUTOMATED_EXPORT_SYSTEM_API_TESTS
 ```
+
+Then run the test suite:
+
+```bash
+./run-tests.sh
+```
+
+`run-tests.sh` is also the command used by the Jenkins pipeline
+(`automated-export-system-api-tests` job), configured with the
+`AUTOMATED_EXPORT_SYSTEM_API_TESTS` Service Manager profile.
 
 ## Scalafmt
 
