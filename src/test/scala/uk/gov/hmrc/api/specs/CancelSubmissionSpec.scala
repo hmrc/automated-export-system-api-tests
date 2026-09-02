@@ -18,6 +18,7 @@ package uk.gov.hmrc.api.specs
 
 import org.scalatest.BeforeAndAfterAll
 import uk.gov.hmrc.api.helpers.PayloadLoader
+import uk.gov.hmrc.api.models.{AuthStubEnrolment, AuthStubIdentifier, AuthStubRequest}
 
 import java.util.UUID
 
@@ -52,9 +53,6 @@ class CancelSubmissionSpec extends BaseSpec with BeforeAndAfterAll {
           "No submissionId found in submissions list - cannot proceed with test setup"
         )
       )
-
-    println(s"[DEBUG] beforeAll -> using submissionId: $submissionId")
-    println(s"[DEBUG] beforeAll -> raw getSubmissions body: ${submissionsResponse.body}")
   }
 
   Feature("Cancel Submission by SubmissionId") {
@@ -70,8 +68,6 @@ class CancelSubmissionSpec extends BaseSpec with BeforeAndAfterAll {
           .cancelSubmission(submissionId, bearerToken)
           .futureValue
 
-      println(s"[DEBUG] cancelSubmission -> status: ${response.status}, body: '${response.body}'")
-
       Then("a no content response is returned")
 
       response.status shouldBe 204
@@ -82,9 +78,6 @@ class CancelSubmissionSpec extends BaseSpec with BeforeAndAfterAll {
         service
           .getSubmission(submissionId, bearerToken)
           .futureValue
-
-      println(s"[DEBUG] getSubmission after cancel -> status: ${getResponse.status}")
-      println(s"[DEBUG] getSubmission after cancel -> body: ${getResponse.body}")
 
       getResponse.status shouldBe 200
 
@@ -104,8 +97,6 @@ class CancelSubmissionSpec extends BaseSpec with BeforeAndAfterAll {
         service
           .cancelSubmission(submissionId, bearerToken)
           .futureValue
-
-      println(s"[DEBUG] cancelSubmission (2nd call) -> status: ${response.status}, body: '${response.body}'")
 
       Then("a no content response is still returned")
 
@@ -128,8 +119,6 @@ class CancelSubmissionSpec extends BaseSpec with BeforeAndAfterAll {
           .cancelSubmission(nonExistentId, bearerToken)
           .futureValue
 
-      println(s"[DEBUG] cancelSubmission (non-existent id: $nonExistentId) -> status: ${response.status}")
-
       Then("a not found response is returned")
 
       response.status shouldBe 404
@@ -138,8 +127,6 @@ class CancelSubmissionSpec extends BaseSpec with BeforeAndAfterAll {
     Scenario("Users cannot cancel submissions belonging to another EORI") {
 
       Given("a bearer token for a different EORI")
-
-      import uk.gov.hmrc.api.models.{AuthStubEnrolment, AuthStubIdentifier, AuthStubRequest}
 
       val otherUserToken =
         service
@@ -166,8 +153,6 @@ class CancelSubmissionSpec extends BaseSpec with BeforeAndAfterAll {
         service
           .cancelSubmission(submissionId, otherUserToken)
           .futureValue
-
-      println(s"[DEBUG] cancelSubmission (other EORI token, submissionId: $submissionId) -> status: ${response.status}")
 
       Then("a not found response is returned, without revealing the submission exists")
 
