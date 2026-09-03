@@ -69,4 +69,13 @@ class ServiceFactory @Inject() (
       submissionId,
       bearerToken
     )
+
+  def cancelSubmission(
+    submissionId: String,
+    bearerToken: String
+  ) =
+    aesService.cancelSubmission(
+      submissionId,
+      bearerToken
+    )
 }

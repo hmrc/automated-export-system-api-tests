@@ -98,4 +98,19 @@ class AesService(client: HttpClientV2)(implicit ec: ExecutionContext) {
       .get(URI.create(s"$baseUrl/submission/$submissionId").toURL)
       .execute[HttpResponse]
   }
+
+  def cancelSubmission(
+    submissionId: String,
+    bearerToken: String
+  ): Future[HttpResponse] = {
+
+    implicit val hc: HeaderCarrier =
+      HeaderCarrier(
+        authorization = Some(Authorization(s"Bearer $bearerToken"))
+      )
+
+    client
+      .get(URI.create(s"$baseUrl/cancel/$submissionId").toURL)
+      .execute[HttpResponse]
+  }
 }
