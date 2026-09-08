@@ -84,7 +84,7 @@ class CancelSubmissionSpec extends BaseSpec with BeforeAndAfterAll {
       And("the retrieved submission reflects the cancelled status")
 
       getResponse.body should include("<submissionId>" + submissionId + "</submissionId>")
-      getResponse.body should include("<status>3</status>")
+      getResponse.body should include("<type>3</type>")
     }
 
     Scenario("Cancelling an already cancelled submission is idempotent") {
