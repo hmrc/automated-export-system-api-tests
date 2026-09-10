@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.api.specs
 
+import java.util.UUID
 import org.scalatest.BeforeAndAfterAll
 import uk.gov.hmrc.api.helpers.PayloadLoader
 
@@ -65,6 +66,39 @@ class GetSubmissionsSpec extends BaseSpec with BeforeAndAfterAll {
       And("the response contains submission identifiers")
 
       response.body should include("<submissionId>")
+    }
+
+    Scenario("Retrieving submissions without a bearer token returns 401") {
+
+      Given("no bearer token")
+
+      When("the submissions endpoint is called without authentication")
+
+      val response =
+        service.getSubmissionsWithoutAuth.futureValue
+
+      Then("an unauthorised response is returned")
+
+      response.status shouldBe 401
+    }
+
+    Scenario("Retrieving submissions with an invalid bearer token returns 401") {
+
+      Given("a garbled bearer token")
+
+      val invalidToken =
+        "not-a-valid-token-" + UUID.randomUUID().toString
+
+      When("the submissions endpoint is called with that token")
+
+      val response =
+        service
+          .getSubmissions(invalidToken)
+          .futureValue
+
+      Then("an unauthorised response is returned")
+
+      response.status shouldBe 401
     }
   }
 }
