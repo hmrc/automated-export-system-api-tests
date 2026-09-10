@@ -84,6 +84,16 @@ class AesService(client: HttpClientV2)(implicit ec: ExecutionContext) {
       .execute[HttpResponse]
   }
 
+  def getSubmissionsWithoutAuth: Future[HttpResponse] = {
+
+    implicit val hc: HeaderCarrier =
+      HeaderCarrier()
+
+    client
+      .get(URI.create(s"$baseUrl/submissions").toURL)
+      .execute[HttpResponse]
+  }
+
   def getSubmission(
     submissionId: String,
     bearerToken: String
@@ -99,6 +109,18 @@ class AesService(client: HttpClientV2)(implicit ec: ExecutionContext) {
       .execute[HttpResponse]
   }
 
+  def getSubmissionWithoutAuth(
+    submissionId: String
+  ): Future[HttpResponse] = {
+
+    implicit val hc: HeaderCarrier =
+      HeaderCarrier()
+
+    client
+      .get(URI.create(s"$baseUrl/submission/$submissionId").toURL)
+      .execute[HttpResponse]
+  }
+
   def cancelSubmission(
     submissionId: String,
     bearerToken: String
@@ -108,6 +130,18 @@ class AesService(client: HttpClientV2)(implicit ec: ExecutionContext) {
       HeaderCarrier(
         authorization = Some(Authorization(s"Bearer $bearerToken"))
       )
+
+    client
+      .get(URI.create(s"$baseUrl/cancel/$submissionId").toURL)
+      .execute[HttpResponse]
+  }
+
+  def cancelSubmissionWithoutAuth(
+    submissionId: String
+  ): Future[HttpResponse] = {
+
+    implicit val hc: HeaderCarrier =
+      HeaderCarrier()
 
     client
       .get(URI.create(s"$baseUrl/cancel/$submissionId").toURL)

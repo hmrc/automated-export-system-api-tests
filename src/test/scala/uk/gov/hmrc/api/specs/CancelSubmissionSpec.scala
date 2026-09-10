@@ -158,5 +158,42 @@ class CancelSubmissionSpec extends BaseSpec with BeforeAndAfterAll {
 
       response.status shouldBe 404
     }
+
+    Scenario("Cancelling a submission without a bearer token returns 401") {
+
+      Given("a submissionId belonging to the authenticated user")
+
+      When("the cancel endpoint is called without authentication")
+
+      val response =
+        service
+          .cancelSubmissionWithoutAuth(submissionId)
+          .futureValue
+
+      Then("an unauthorised response is returned")
+
+      response.status shouldBe 401
+    }
+
+    Scenario("Cancelling a submission with an invalid bearer token returns 401") {
+
+      Given("a submissionId belonging to the authenticated user")
+
+      And("a garbled bearer token")
+
+      val invalidToken =
+        "not-a-valid-token-" + UUID.randomUUID().toString
+
+      When("the cancel endpoint is called with that token")
+
+      val response =
+        service
+          .cancelSubmission(submissionId, invalidToken)
+          .futureValue
+
+      Then("an unauthorised response is returned")
+
+      response.status shouldBe 401
+    }
   }
 }

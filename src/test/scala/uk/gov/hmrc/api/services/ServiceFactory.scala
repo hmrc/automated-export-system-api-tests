@@ -61,6 +61,9 @@ class ServiceFactory @Inject() (
       bearerToken
     )
 
+  def getSubmissionsWithoutAuth =
+    aesService.getSubmissionsWithoutAuth
+
   def getSubmission(
     submissionId: String,
     bearerToken: String
@@ -70,6 +73,13 @@ class ServiceFactory @Inject() (
       bearerToken
     )
 
+  def getSubmissionWithoutAuth(
+    submissionId: String
+  ) =
+    aesService.getSubmissionWithoutAuth(
+      submissionId
+    )
+
   def cancelSubmission(
     submissionId: String,
     bearerToken: String
@@ -77,5 +87,12 @@ class ServiceFactory @Inject() (
     aesService.cancelSubmission(
       submissionId,
       bearerToken
+    )
+
+  def cancelSubmissionWithoutAuth(
+    submissionId: String
+  ) =
+    aesService.cancelSubmissionWithoutAuth(
+      submissionId
     )
 }
