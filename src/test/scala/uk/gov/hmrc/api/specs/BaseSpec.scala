@@ -32,6 +32,25 @@ import uk.gov.hmrc.api.helpers.Module
 import uk.gov.hmrc.api.services.ServiceFactory
 import uk.gov.hmrc.http.client.HttpClientV2
 
+import java.net.URI
+import java.net.http.{HttpClient, HttpRequest, HttpResponse}
+
+// AES-856 testOnly endpoint to delete all data in the test database. This is used to ensure that each test run starts with a clean slate. It is called once before any tests are run.
+private object TestDataCleanup {
+
+  lazy val runOnce: Unit = {
+    val cleanupHttpClient = HttpClient.newHttpClient()
+    val request           = HttpRequest
+      .newBuilder()
+      .uri(URI.create("http://localhost:5000/automated-export-system/test-only/delete-all"))
+      .GET()
+      .build()
+    cleanupHttpClient.send(request, HttpResponse.BodyHandlers.discarding())
+    ()
+  }
+
+}
+
 trait BaseSpec
     extends AnyFeatureSpec
     with GivenWhenThen
@@ -40,6 +59,8 @@ trait BaseSpec
     with ScalaFutures
     with BeforeAndAfterEach
     with GuiceOneServerPerSuite {
+
+  TestDataCleanup.runOnce
 
   override implicit val patienceConfig: PatienceConfig =
     PatienceConfig(
