@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<aes:Submission xmlns:aes="http://ecs.dgtaxud.ec">
+    <submissionId>700d2c74-f313-4dfb-89d3-0f9ad1bb9378</submissionId>
+
+    <ExportOperation>
+        <type>1</type>
+        <MRN>26GB0000X6524786B0</MRN>
+        <discrepanciesExist>0</discrepanciesExist>
+        <splitIndicator>0</splitIndicator>
+    </ExportOperation>
+
+    <CustomsOfficeOfExitActual>
+        <referenceNumber>IEARK100</referenceNumber>
+    </CustomsOfficeOfExitActual>
+
+    <GoodsShipment>
+        <Consignment>
+            <modeOfTransportAtTheBorder>1</modeOfTransportAtTheBorder>
+            <referenceNumberUCR>6GB536187624189-S459</referenceNumberUCR>
+            <!-- TC17 (E2E_11413_TC17): parent_UCR_id populated with a valid MUCR.
+                 AES must consolidate the DUCR entered in the IE507 into the MUCR. -->
+            <parentUCRID>GB/000000000000-12345</parentUCRID>
+
+            <LocationOfGoods>
+                <typeOfLocation>A</typeOfLocation>
+                <qualifierOfIdentification>B</qualifierOfIdentification>
+                <authorisationNumber>AUTH12345</authorisationNumber>
+            </LocationOfGoods>
+
+            <ActiveBorderTransportMeans>
+                <typeOfIdentification>20</typeOfIdentification>
+                <identificationNumber>IDNUMBER123</identificationNumber>
+                <nationality>GB</nationality>
+            </ActiveBorderTransportMeans>
+        </Consignment>
+
+        <GoodsItem>
+            <declarationGoodsItemNumber>1</declarationGoodsItemNumber>
+
+            <Commodity>
+                <GoodsMeasure>
+                    <grossMass>1000.500000</grossMass>
+                    <netMass>900.500000</netMass>
+                </GoodsMeasure>
+            </Commodity>
+
+            <Packaging>
+                <sequenceNumber>1</sequenceNumber>
+                <typeOfPackages>PA</typeOfPackages>
+                <numberOfPackages>10</numberOfPackages>
+                <shippingMarks>MARKS123</shippingMarks>
+            </Packaging>
+        </GoodsItem>
+    </GoodsShipment>
+</aes:Submission>
