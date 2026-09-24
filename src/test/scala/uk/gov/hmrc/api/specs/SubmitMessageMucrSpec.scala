@@ -107,11 +107,6 @@ class SubmitMessageMucrSpec extends BaseSpec with BeforeAndAfterAll {
 
       response.status shouldBe 200
 
-      // NOTE: assumes the GET submission response echoes the same
-      // <parentUCRID> tag used on the way in (per Consignment's XML
-      // writer in the backend). Verify this against a real run before
-      // relying on it in CI - update the tag/assertion if the response
-      // shape differs.
       And("the response contains the MUCR that was submitted")
 
       response.body should include(s"<parentUCRID>$expectedMucr</parentUCRID>")
