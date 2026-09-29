@@ -49,8 +49,8 @@ class SubmitMessagePackagingSpec extends BaseSpec with BeforeAndAfterAll {
         service.getSubmission(submission.submissionId, bearerToken).futureValue
 
       getResponse.status shouldBe 200
-      getResponse.body should include("<sequenceNumber>1</sequenceNumber>")
-      getResponse.body should include("<shippingMarks>MARKS-1</shippingMarks>")
+      getResponse.body     should include("<sequenceNumber>1</sequenceNumber>")
+      getResponse.body     should include("<shippingMarks>MARKS-1</shippingMarks>")
     }
 
     Scenario("Submission with multiple Packaging entries is accepted and entries are returned in submitted order") {
@@ -80,7 +80,7 @@ class SubmitMessagePackagingSpec extends BaseSpec with BeforeAndAfterAll {
       val markPositions =
         Seq("MARKS-1", "MARKS-2", "MARKS-3").map(body.indexOf)
 
-      markPositions should not contain -1
+      markPositions   should not contain -1
       markPositions shouldBe sorted
 
       val seqPositions =
@@ -90,7 +90,7 @@ class SubmitMessagePackagingSpec extends BaseSpec with BeforeAndAfterAll {
           "<sequenceNumber>3</sequenceNumber>"
         ).map(body.indexOf)
 
-      seqPositions should not contain -1
+      seqPositions   should not contain -1
       seqPositions shouldBe sorted
     }
 
@@ -115,7 +115,7 @@ class SubmitMessagePackagingSpec extends BaseSpec with BeforeAndAfterAll {
         service.getSubmission(submission.submissionId, bearerToken).futureValue
 
       getResponse.status shouldBe 200
-      getResponse.body should include("<sequenceNumber>99</sequenceNumber>")
+      getResponse.body     should include("<sequenceNumber>99</sequenceNumber>")
     }
 
     Scenario("Submission with 100 Packaging entries (over limit) is rejected") {
@@ -132,8 +132,8 @@ class SubmitMessagePackagingSpec extends BaseSpec with BeforeAndAfterAll {
       Then("a bad request response is returned")
 
       response.status shouldBe 400
-      response.body should include("BAD_REQUEST")
-      response.body should include("Packaging")
+      response.body     should include("BAD_REQUEST")
+      response.body     should include("Packaging")
     }
   }
 }
