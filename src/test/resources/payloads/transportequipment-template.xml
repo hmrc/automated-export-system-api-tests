@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<aes:Submission xmlns:aes="http://ecs.dgtaxud.ec">
+    <submissionId>{{SUBMISSION_ID}}</submissionId>
+
+    <ExportOperation>
+        <type>1</type>
+        <MRN>26GB0000X6524786A9</MRN>
+        <discrepanciesExist>0</discrepanciesExist>
+        <splitIndicator>0</splitIndicator>
+    </ExportOperation>
+
+    <CustomsOfficeOfExitActual>
+        <referenceNumber>IEARK100</referenceNumber>
+    </CustomsOfficeOfExitActual>
+
+    <GoodsShipment>
+        <Consignment>
+            <modeOfTransportAtTheBorder>1</modeOfTransportAtTheBorder>
+            <referenceNumberUCR>6GB536187624189-S458</referenceNumberUCR>
+
+            {{TRANSPORT_EQUIPMENT_BLOCKS}}
+
+            <LocationOfGoods>
+                <typeOfLocation>A</typeOfLocation>
+                <qualifierOfIdentification>B</qualifierOfIdentification>
+                <authorisationNumber>AUTH12345</authorisationNumber>
+            </LocationOfGoods>
+
+            <ActiveBorderTransportMeans>
+                <typeOfIdentification>20</typeOfIdentification>
+                <identificationNumber>IDNUMBER123</identificationNumber>
+                <nationality>GB</nationality>
+            </ActiveBorderTransportMeans>
+        </Consignment>
+
+        <GoodsItem>
+            <declarationGoodsItemNumber>1</declarationGoodsItemNumber>
+
+            <Commodity>
+                <GoodsMeasure>
+                    <grossMass>1000.500000</grossMass>
+                    <netMass>900.500000</netMass>
+                </GoodsMeasure>
+            </Commodity>
+        </GoodsItem>
+    </GoodsShipment>
+</aes:Submission>
