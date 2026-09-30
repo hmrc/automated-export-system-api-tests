@@ -49,8 +49,8 @@ class SubmitMessageGoodsReferenceSpec extends BaseSpec with BeforeAndAfterAll {
         service.getSubmission(submission.submissionId, bearerToken).futureValue
 
       getResponse.status shouldBe 200
-      getResponse.body should include("<sequenceNumber>1</sequenceNumber>")
-      getResponse.body should include("<declarationGoodsItemNumber>1</declarationGoodsItemNumber>")
+      getResponse.body     should include("<sequenceNumber>1</sequenceNumber>")
+      getResponse.body     should include("<declarationGoodsItemNumber>1</declarationGoodsItemNumber>")
     }
 
     Scenario(
@@ -86,7 +86,7 @@ class SubmitMessageGoodsReferenceSpec extends BaseSpec with BeforeAndAfterAll {
           "<sequenceNumber>3</sequenceNumber>"
         ).map(body.indexOf)
 
-      seqPositions should not contain -1
+      seqPositions   should not contain -1
       seqPositions shouldBe sorted
     }
 
@@ -111,7 +111,7 @@ class SubmitMessageGoodsReferenceSpec extends BaseSpec with BeforeAndAfterAll {
         service.getSubmission(submission.submissionId, bearerToken).futureValue
 
       getResponse.status shouldBe 200
-      getResponse.body should include("<sequenceNumber>700</sequenceNumber>")
+      getResponse.body     should include("<sequenceNumber>700</sequenceNumber>")
     }
 
     Scenario("Submission exceeding the request body-size limit is rejected") {
@@ -128,7 +128,7 @@ class SubmitMessageGoodsReferenceSpec extends BaseSpec with BeforeAndAfterAll {
       Then("a request entity too large response is returned")
 
       response.status shouldBe 413
-      response.body should include("Request Entity Too Large")
+      response.body     should include("Request Entity Too Large")
     }
   }
 }
