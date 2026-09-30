@@ -21,19 +21,15 @@ import uk.gov.hmrc.api.helpers.TransportEquipmentXmlBuilder
 
 /** AES-917: Automated API tests for the TransportEquipment list on IE507A submissions.
   *
-  * NOTE ON THE 9999/10000 ACCEPTANCE CRITERIA:
-  * The IE507A XSD allows up to 9999 TransportEquipment entries (maxOccurs="9999"), and the
-  * ticket's AC describes accepting a submission at that limit and rejecting one above it.
-  * In practice this boundary cannot be exercised through the API: the AES service's request
-  * body size limit (Play's default `play.http.parser.maxMemoryBuffer`, ~100KB) is reached at
-  * around 500-600 TransportEquipment entries - long before the schema's entry-count limit -
-  * and the request is rejected with 413 (Request Entity Too Large) before entry-count
-  * validation ever runs. This was confirmed by probing payload sizes from 500 to 9999 entries:
-  *   500 entries  (~99.9KB)  -> 202 Accepted
-  *   1000 entries (~198.4KB) -> 413 Request Entity Too Large
-  * These tests therefore verify the closest practically-reachable behaviour instead of the
-  * literal 9999/10000 boundary. Flagged to the team separately for a decision on whether to
-  * raise the body-size limit or clarify the AC.
+  * NOTE ON THE 9999/10000 ACCEPTANCE CRITERIA: The IE507A XSD allows up to 9999 TransportEquipment entries
+  * (maxOccurs="9999"), and the ticket's AC describes accepting a submission at that limit and rejecting one above it.
+  * In practice this boundary cannot be exercised through the API: the AES service's request body size limit (Play's
+  * default `play.http.parser.maxMemoryBuffer`, ~100KB) is reached at around 500-600 TransportEquipment entries - long
+  * before the schema's entry-count limit - and the request is rejected with 413 (Request Entity Too Large) before
+  * entry-count validation ever runs. This was confirmed by probing payload sizes from 500 to 9999 entries: 500 entries
+  * (~99.9KB) -> 202 Accepted 1000 entries (~198.4KB) -> 413 Request Entity Too Large These tests therefore verify the
+  * closest practically-reachable behaviour instead of the literal 9999/10000 boundary. Flagged to the team separately
+  * for a decision on whether to raise the body-size limit or clarify the AC.
   */
 class SubmitMessageTransportEquipmentSpec extends BaseSpec with BeforeAndAfterAll {
 
@@ -65,8 +61,8 @@ class SubmitMessageTransportEquipmentSpec extends BaseSpec with BeforeAndAfterAl
         service.getSubmission(submission.submissionId, bearerToken).futureValue
 
       getResponse.status shouldBe 200
-      getResponse.body should include("<sequenceNumber>1</sequenceNumber>")
-      getResponse.body should include("<containerIdentificationNumber>CONT1</containerIdentificationNumber>")
+      getResponse.body     should include("<sequenceNumber>1</sequenceNumber>")
+      getResponse.body     should include("<containerIdentificationNumber>CONT1</containerIdentificationNumber>")
     }
 
     Scenario(
@@ -98,7 +94,7 @@ class SubmitMessageTransportEquipmentSpec extends BaseSpec with BeforeAndAfterAl
       val containerPositions =
         Seq("CONT1", "CONT2", "CONT3").map(body.indexOf)
 
-      containerPositions should not contain -1
+      containerPositions   should not contain -1
       containerPositions shouldBe sorted
 
       val seqPositions =
@@ -108,7 +104,7 @@ class SubmitMessageTransportEquipmentSpec extends BaseSpec with BeforeAndAfterAl
           "<sequenceNumber>3</sequenceNumber>"
         ).map(body.indexOf)
 
-      seqPositions should not contain -1
+      seqPositions   should not contain -1
       seqPositions shouldBe sorted
     }
 
@@ -133,7 +129,7 @@ class SubmitMessageTransportEquipmentSpec extends BaseSpec with BeforeAndAfterAl
         service.getSubmission(submission.submissionId, bearerToken).futureValue
 
       getResponse.status shouldBe 200
-      getResponse.body should include("<sequenceNumber>500</sequenceNumber>")
+      getResponse.body     should include("<sequenceNumber>500</sequenceNumber>")
     }
 
     Scenario("Submission exceeding the request body-size limit is rejected") {
@@ -150,7 +146,7 @@ class SubmitMessageTransportEquipmentSpec extends BaseSpec with BeforeAndAfterAl
       Then("a request entity too large response is returned")
 
       response.status shouldBe 413
-      response.body should include("Request Entity Too Large")
+      response.body     should include("Request Entity Too Large")
     }
   }
 }

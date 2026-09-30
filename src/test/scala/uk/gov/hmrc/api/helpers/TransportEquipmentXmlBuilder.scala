@@ -34,7 +34,9 @@ object TransportEquipmentXmlBuilder {
   private def toXml(entry: TransportEquipmentEntry): String =
     s"""<TransportEquipment>
        |    <sequenceNumber>${entry.sequenceNumber}</sequenceNumber>
-       |    <containerIdentificationNumber>${entry.containerIdentificationNumber.getOrElse(s"CONT${entry.sequenceNumber}")}</containerIdentificationNumber>
+       |    <containerIdentificationNumber>${entry.containerIdentificationNumber.getOrElse(
+        s"CONT${entry.sequenceNumber}"
+      )}</containerIdentificationNumber>
        |    <numberOfSeals>${entry.numberOfSeals}</numberOfSeals>
        |</TransportEquipment>""".stripMargin
 
