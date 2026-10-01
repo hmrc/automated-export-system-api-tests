@@ -80,6 +80,11 @@ class GetSubmissionsSpec extends BaseSpec with BeforeAndAfterAll {
       Then("an unauthorised response is returned")
 
       response.status shouldBe 401
+
+      // filter returns an empty body, unlike the AesErrorResponse XML used for 400/404.
+      And("the response body is empty")
+
+      response.body shouldBe empty
     }
 
     Scenario("Retrieving submissions with an invalid bearer token returns 401") {
@@ -99,6 +104,10 @@ class GetSubmissionsSpec extends BaseSpec with BeforeAndAfterAll {
       Then("an unauthorised response is returned")
 
       response.status shouldBe 401
+
+      And("the response body is empty")
+
+      response.body shouldBe empty
     }
   }
 }

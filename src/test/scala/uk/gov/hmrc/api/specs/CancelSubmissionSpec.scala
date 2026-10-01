@@ -122,6 +122,12 @@ class CancelSubmissionSpec extends BaseSpec with BeforeAndAfterAll {
       Then("a not found response is returned")
 
       response.status shouldBe 404
+
+      And("the error response is valid XML with the correct content-type")
+
+      response.body                   should startWith("<?xml")
+      response.body                   should include("<errorResponse>")
+      response.header("Content-Type") should contain("application/xml; charset=UTF-8")
     }
 
     Scenario("Users cannot cancel submissions belonging to another EORI") {
@@ -173,6 +179,11 @@ class CancelSubmissionSpec extends BaseSpec with BeforeAndAfterAll {
       Then("an unauthorised response is returned")
 
       response.status shouldBe 401
+
+      // filter returns an empty body, unlike the AesErrorResponse XML used for 400/404.
+      And("the response body is empty")
+
+      response.body shouldBe empty
     }
 
     Scenario("Cancelling a submission with an invalid bearer token returns 401") {
@@ -194,6 +205,10 @@ class CancelSubmissionSpec extends BaseSpec with BeforeAndAfterAll {
       Then("an unauthorised response is returned")
 
       response.status shouldBe 401
+
+      And("the response body is empty")
+
+      response.body shouldBe empty
     }
   }
 }
