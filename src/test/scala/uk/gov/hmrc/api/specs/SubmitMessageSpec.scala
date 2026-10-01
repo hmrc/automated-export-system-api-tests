@@ -70,6 +70,12 @@ class SubmitMessageSpec extends BaseSpec with BeforeAndAfterAll {
       Then("a bad request response is returned")
 
       response.status shouldBe 400
+
+      And("the error response is valid XML with the correct content-type")
+
+      response.body                   should startWith("<?xml")
+      response.body                   should include("<errorResponse>")
+      response.header("Content-Type") should contain("application/xml; charset=UTF-8")
     }
 
     Scenario("Submission without token returns 401") {
@@ -89,6 +95,11 @@ class SubmitMessageSpec extends BaseSpec with BeforeAndAfterAll {
       Then("the request is rejected as unauthorised")
 
       response.status shouldBe 401
+
+      // Note (AES-871): unlike the 400 case above, this 401 response is returned with an empty body and no content-type header
+      And("the response body is empty")
+
+      response.body shouldBe empty
     }
   }
 }
