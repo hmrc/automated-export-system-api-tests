@@ -70,6 +70,43 @@ class AesService(client: HttpClientV2)(implicit ec: ExecutionContext) {
       .execute[HttpResponse]
   }
 
+  def submitMessageWithoutContentType(
+    xml: String,
+    bearerToken: String
+  ): Future[HttpResponse] = {
+
+    implicit val hc: HeaderCarrier =
+      HeaderCarrier(
+        authorization = Some(Authorization(s"Bearer $bearerToken"))
+      )
+
+    client
+      .post(URI.create(aesUrl).toURL)
+      .withBody(xml)
+      .execute[HttpResponse]
+  }
+
+  def submitMessageWithContentType(
+    xml: String,
+    bearerToken: String,
+    contentType: String
+  ): Future[HttpResponse] = {
+
+    implicit val hc: HeaderCarrier =
+      HeaderCarrier(
+        authorization = Some(Authorization(s"Bearer $bearerToken"))
+      )
+
+    client
+      .post(URI.create(aesUrl).toURL)
+      .setHeader(
+        "Content-Type" ->
+          contentType
+      )
+      .withBody(xml)
+      .execute[HttpResponse]
+  }
+
   def getSubmissions(
     bearerToken: String
   ): Future[HttpResponse] = {

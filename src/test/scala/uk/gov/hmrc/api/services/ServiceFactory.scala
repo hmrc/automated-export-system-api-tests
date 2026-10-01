@@ -54,6 +54,26 @@ class ServiceFactory @Inject() (
   ) =
     aesService.submitMessageWithoutAuth(xml)
 
+  def submitMessageWithoutContentType(
+    xml: String,
+    bearerToken: String
+  ) =
+    aesService.submitMessageWithoutContentType(
+      xml,
+      bearerToken
+    )
+
+  def submitMessageWithContentType(
+    xml: String,
+    bearerToken: String,
+    contentType: String
+  ) =
+    aesService.submitMessageWithContentType(
+      xml,
+      bearerToken,
+      contentType
+    )
+
   def getSubmissions(
     bearerToken: String
   ) =
