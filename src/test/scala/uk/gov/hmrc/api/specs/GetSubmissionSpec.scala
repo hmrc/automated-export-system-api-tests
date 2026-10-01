@@ -100,6 +100,12 @@ class GetSubmissionSpec extends BaseSpec with BeforeAndAfterAll {
       Then("a not found response is returned")
 
       response.status shouldBe 404
+
+      And("the error response is valid XML with the correct content-type")
+
+      response.body                   should startWith("<?xml")
+      response.body                   should include("<errorResponse>")
+      response.header("Content-Type") should contain("application/xml; charset=UTF-8")
     }
 
     Scenario("Users cannot retrieve submissions belonging to another EORI") {
@@ -151,6 +157,10 @@ class GetSubmissionSpec extends BaseSpec with BeforeAndAfterAll {
       Then("an unauthorised response is returned")
 
       response.status shouldBe 401
+
+      And("the response body is empty")
+
+      response.body shouldBe empty
     }
 
     Scenario("Retrieving a submission with an invalid bearer token returns 401") {
@@ -172,6 +182,10 @@ class GetSubmissionSpec extends BaseSpec with BeforeAndAfterAll {
       Then("an unauthorised response is returned")
 
       response.status shouldBe 401
+
+      And("the response body is empty")
+
+      response.body shouldBe empty
     }
   }
 }
