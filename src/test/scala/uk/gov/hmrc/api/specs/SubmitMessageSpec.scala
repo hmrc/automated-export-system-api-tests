@@ -96,10 +96,68 @@ class SubmitMessageSpec extends BaseSpec with BeforeAndAfterAll {
 
       response.status shouldBe 401
 
-      // Note (AES-871): unlike the 400 case above, this 401 response is returned with an empty body and no content-type header
+      // Note (AES-871): consistent with other endpoints - 401 from bootstrap's auth
+      // filter returns an empty body, unlike the AesErrorResponse XML used for 400/404.
       And("the response body is empty")
 
       response.body shouldBe empty
+    }
+
+    Scenario("Submission with a missing Content-Type header returns a 4xx response") {
+
+      Given("a valid IE507 XML payload and a valid bearer token")
+
+      val xml =
+        PayloadLoader.load("valid-ie507.xml")
+
+      When("the payload is submitted without a Content-Type header")
+
+      val response =
+        service
+          .submitMessageWithoutContentType(
+            xml,
+            bearerToken
+          )
+          .futureValue
+
+      Then("a client error response is returned, not a server error")
+
+      response.status should (be >= 400 and be < 500)
+
+      And("the error response is valid XML with the correct content-type")
+
+      response.body                   should startWith("<?xml")
+      response.body                   should include("<errorResponse>")
+      response.header("Content-Type") should contain("application/xml; charset=UTF-8")
+    }
+
+    Scenario("Submission with a malformed Content-Type header value returns a 4xx response") {
+
+      Given("a valid IE507 XML payload and a valid bearer token")
+
+      val xml =
+        PayloadLoader.load("valid-ie507.xml")
+
+      When("the payload is submitted with a Content-Type header using an invalid charset")
+
+      val response =
+        service
+          .submitMessageWithContentType(
+            xml,
+            bearerToken,
+            "application/xml; charset=ISO-8859-1"
+          )
+          .futureValue
+
+      Then("a client error response is returned, not a server error")
+
+      response.status should (be >= 400 and be < 500)
+
+      And("the error response is valid XML with the correct content-type")
+
+      response.body                   should startWith("<?xml")
+      response.body                   should include("<errorResponse>")
+      response.header("Content-Type") should contain("application/xml; charset=UTF-8")
     }
   }
 }
