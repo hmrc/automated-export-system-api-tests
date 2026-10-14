@@ -184,4 +184,45 @@ class AesService(client: HttpClientV2)(implicit ec: ExecutionContext) {
       .get(URI.create(s"$baseUrl/cancel/$submissionId").toURL)
       .execute[HttpResponse]
   }
+
+  def submitMessageWithCorrelationId(
+    xml: String,
+    bearerToken: String,
+    correlationId: String
+  ): Future[HttpResponse] = {
+
+    implicit val hc: HeaderCarrier =
+      HeaderCarrier(
+        authorization = Some(Authorization(s"Bearer $bearerToken"))
+      )
+
+    client
+      .post(URI.create(aesUrl).toURL)
+      .setHeader(
+        "Content-Type"     -> "application/xml",
+        "X-Correlation-Id" -> correlationId
+      )
+      .withBody(xml)
+      .execute[HttpResponse]
+  }
+
+  def submitNotification(
+    xml: String,
+    token: String
+  ): Future[HttpResponse] = {
+
+    // The notification endpoint compares the raw Authorization header with its configured token (no "Bearer " prefix)
+    implicit val hc: HeaderCarrier =
+      HeaderCarrier(
+        authorization = Some(Authorization(token))
+      )
+
+    client
+      .post(URI.create(s"$baseUrl/notification").toURL)
+      .setHeader(
+        "Content-Type" -> "application/xml"
+      )
+      .withBody(xml)
+      .execute[HttpResponse]
+  }
 }
