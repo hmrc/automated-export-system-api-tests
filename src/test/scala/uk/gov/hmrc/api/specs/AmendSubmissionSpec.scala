@@ -56,7 +56,11 @@ class AmendSubmissionSpec extends BaseSpec with BeforeAndAfterAll {
     val submissionId = UUID.randomUUID().toString
 
     service
-      .submitMessageWithCorrelationId(Ie507PayloadBuilder.build(Ie507Fields(submissionId)), bearerToken, newCorrelationId())
+      .submitMessageWithCorrelationId(
+        Ie507PayloadBuilder.build(Ie507Fields(submissionId)),
+        bearerToken,
+        newCorrelationId()
+      )
       .futureValue
       .status shouldBe 202
 
@@ -73,8 +77,8 @@ class AmendSubmissionSpec extends BaseSpec with BeforeAndAfterAll {
 
       Given("an existing, accepted submission")
 
-      val submissionId      = createAcceptedSubmission()
-      val original          = service.getSubmission(submissionId, bearerToken).futureValue
+      val submissionId = createAcceptedSubmission()
+      val original     = service.getSubmission(submissionId, bearerToken).futureValue
       tagValue(original.body, "discrepanciesExist") shouldBe Some("0")
       val originalUpdatedAt = tagValue(original.body, "updatedAt")
 
@@ -82,7 +86,11 @@ class AmendSubmissionSpec extends BaseSpec with BeforeAndAfterAll {
 
       val amendResponse =
         service
-          .submitMessageWithCorrelationId(Ie507PayloadBuilder.build(amendedFields(submissionId)), bearerToken, newCorrelationId())
+          .submitMessageWithCorrelationId(
+            Ie507PayloadBuilder.build(amendedFields(submissionId)),
+            bearerToken,
+            newCorrelationId()
+          )
           .futureValue
 
       Then("the amendment is accepted")
@@ -106,7 +114,7 @@ class AmendSubmissionSpec extends BaseSpec with BeforeAndAfterAll {
       tagValue(amended.body, "discrepanciesExist") shouldBe Some("1")
       tagValue(amended.body, "splitIndicator")     shouldBe Some("1")
       tagValue(amended.body, "shippingMarks")      shouldBe Some("AMENDED01")
-      tagValue(amended.body, "updatedAt")          should not be originalUpdatedAt
+      tagValue(amended.body, "updatedAt")            should not be originalUpdatedAt
     }
 
     Scenario("Amending a submission does not create a duplicate submission") {
@@ -115,7 +123,11 @@ class AmendSubmissionSpec extends BaseSpec with BeforeAndAfterAll {
 
       val submissionId = createAcceptedSubmission()
       service
-        .submitMessageWithCorrelationId(Ie507PayloadBuilder.build(amendedFields(submissionId)), bearerToken, newCorrelationId())
+        .submitMessageWithCorrelationId(
+          Ie507PayloadBuilder.build(amendedFields(submissionId)),
+          bearerToken,
+          newCorrelationId()
+        )
         .futureValue
         .status shouldBe 202
       awaitAccepted(submissionId)
@@ -126,7 +138,7 @@ class AmendSubmissionSpec extends BaseSpec with BeforeAndAfterAll {
 
       Then("the submission appears exactly once")
 
-      list.status shouldBe 200
+      list.status                                                                    shouldBe 200
       s"<submissionId>$submissionId</submissionId>".r.findAllMatchIn(list.body).size shouldBe 1
     }
 
@@ -138,7 +150,8 @@ class AmendSubmissionSpec extends BaseSpec with BeforeAndAfterAll {
 
       When("an amendment is submitted without authentication")
 
-      val response = service.submitMessageWithoutAuth(Ie507PayloadBuilder.build(amendedFields(submissionId))).futureValue
+      val response =
+        service.submitMessageWithoutAuth(Ie507PayloadBuilder.build(amendedFields(submissionId))).futureValue
 
       Then("the request is rejected as unauthorised")
 
@@ -163,13 +176,15 @@ class AmendSubmissionSpec extends BaseSpec with BeforeAndAfterAll {
 
       Then("a bad request response is returned")
 
-      response.status                 shouldBe 400
+      response.status               shouldBe 400
       response.body                   should include("<errorResponse>")
       response.header("Content-Type") should contain("application/xml; charset=UTF-8")
 
       And("the original submission is unchanged")
 
-      tagValue(service.getSubmission(submissionId, bearerToken).futureValue.body, "discrepanciesExist") shouldBe Some("0")
+      tagValue(service.getSubmission(submissionId, bearerToken).futureValue.body, "discrepanciesExist") shouldBe Some(
+        "0"
+      )
     }
 
     Scenario("A notification with an invalid token returns 401") {
@@ -212,7 +227,11 @@ class AmendSubmissionSpec extends BaseSpec with BeforeAndAfterAll {
 
         val response =
           service
-            .submitMessageWithCorrelationId(Ie507PayloadBuilder.build(amendedFields(submissionId)), otherToken, newCorrelationId())
+            .submitMessageWithCorrelationId(
+              Ie507PayloadBuilder.build(amendedFields(submissionId)),
+              otherToken,
+              newCorrelationId()
+            )
             .futureValue
 
         Then("the amendment is rejected")

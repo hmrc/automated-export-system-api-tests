@@ -38,9 +38,18 @@ object Ie507PayloadBuilder {
   def build(fields: Ie507Fields): String =
     template
       .replaceFirst("<submissionId>[^<]*</submissionId>", s"<submissionId>${fields.submissionId}</submissionId>")
-      .replaceFirst("<referenceNumber>[^<]*</referenceNumber>", s"<referenceNumber>${fields.officeOfExit}</referenceNumber>")
-      .replaceFirst("<discrepanciesExist>[^<]*</discrepanciesExist>", s"<discrepanciesExist>${fields.discrepanciesExist}</discrepanciesExist>")
-      .replaceFirst("<splitIndicator>[^<]*</splitIndicator>", s"<splitIndicator>${fields.splitIndicator}</splitIndicator>")
+      .replaceFirst(
+        "<referenceNumber>[^<]*</referenceNumber>",
+        s"<referenceNumber>${fields.officeOfExit}</referenceNumber>"
+      )
+      .replaceFirst(
+        "<discrepanciesExist>[^<]*</discrepanciesExist>",
+        s"<discrepanciesExist>${fields.discrepanciesExist}</discrepanciesExist>"
+      )
+      .replaceFirst(
+        "<splitIndicator>[^<]*</splitIndicator>",
+        s"<splitIndicator>${fields.splitIndicator}</splitIndicator>"
+      )
       .replaceFirst("<shippingMarks>[^<]*</shippingMarks>", s"<shippingMarks>${fields.shippingMarks}</shippingMarks>")
 }
 
