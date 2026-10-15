@@ -115,4 +115,24 @@ class ServiceFactory @Inject() (
     aesService.cancelSubmissionWithoutAuth(
       submissionId
     )
+
+  def submitMessageWithCorrelationId(
+    xml: String,
+    bearerToken: String,
+    correlationId: String
+  ) =
+    aesService.submitMessageWithCorrelationId(
+      xml,
+      bearerToken,
+      correlationId
+    )
+
+  def submitNotification(
+    xml: String,
+    token: String
+  ) =
+    aesService.submitNotification(
+      xml,
+      token
+    )
 }

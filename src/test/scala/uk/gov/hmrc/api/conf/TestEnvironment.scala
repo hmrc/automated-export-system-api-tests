@@ -44,4 +44,9 @@ object TestEnvironment {
     else
       s"$host$route"
   }
+
+  def notificationToken: String =
+    sys.env
+      .get("AES_NOTIFICATION_TOKEN")
+      .getOrElse(config.getString(s"$environment.services.aes.notificationToken"))
 }
