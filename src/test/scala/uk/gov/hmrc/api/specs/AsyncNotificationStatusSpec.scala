@@ -132,7 +132,7 @@ class AsyncNotificationStatusSpec extends BaseSpec {
 
       val body = submissionBody(user, submissionId)
       SubmissionXml.tagValue(body, "status") shouldBe Some(AwaitingStatus)
-      SubmissionXml.errors(body) shouldBe empty
+      SubmissionXml.errors(body)             shouldBe empty
     }
 
     Scenario("A standard submission accepted by the stubs has status ACCEPTED", AsyncNotificationTag) {
@@ -188,9 +188,9 @@ class AsyncNotificationStatusSpec extends BaseSpec {
       And("the single submission returns the IE906 error for the MRN")
 
       val errors = SubmissionXml.errors(submissionBody(user, submissionId))
-      errors                    should have size 1
-      errors.head.path          shouldBe Some("Body.ExportOperation.MRN")
-      errors.head.code          should not be Some("UNKNOWN_ERROR")
+      errors             should have size 1
+      errors.head.path shouldBe Some("Body.ExportOperation.MRN")
+      errors.head.code   should not be Some("UNKNOWN_ERROR")
     }
 
     Scenario("A diversion followed by an IE917 returns the IE917 as the latest status", AsyncNotificationTag) {
@@ -262,7 +262,7 @@ class AsyncNotificationStatusSpec extends BaseSpec {
 
       val body = submissionBody(user, submissionId)
       SubmissionXml.tagValue(body, "status") shouldBe Some(AcceptedStatus)
-      SubmissionXml.errors(body) shouldBe empty
+      SubmissionXml.errors(body)             shouldBe empty
     }
 
     Scenario("A diversion followed by a rejection returns the rejection and its errors", AsyncNotificationTag) {
@@ -309,7 +309,7 @@ class AsyncNotificationStatusSpec extends BaseSpec {
       val (submissionId, correlationId) = createSubmissionWithoutAsyncResponse(user)
 
       sendNotification(user, correlationId, NotificationDiversion).status shouldBe 204
-      sendNotification(user, correlationId, NotificationAccepted).status shouldBe 204
+      sendNotification(user, correlationId, NotificationAccepted).status  shouldBe 204
 
       When("another notification is received for the same correlationId")
 
@@ -335,7 +335,7 @@ class AsyncNotificationStatusSpec extends BaseSpec {
       When("only the first receives a diversion followed by an ACK")
 
       sendNotification(user, correlationId, NotificationDiversion).status shouldBe 204
-      sendNotification(user, correlationId, NotificationAccepted).status shouldBe 204
+      sendNotification(user, correlationId, NotificationAccepted).status  shouldBe 204
 
       Then("the first is listed as ACCEPTED (1) and the second as AWAITING (0)")
 
