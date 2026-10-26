@@ -205,45 +205,43 @@ class AmendSubmissionSpec extends BaseSpec with BeforeAndAfterAll {
     // Known issue: the backend saves by submissionId only, so another EORI can overwrite this submission.
     // Marked pendingUntilFixed until the backend is fixed (the bug ticket is AES-1093)
     Scenario("A trader cannot amend a submission belonging to another EORI") {
-      pendingUntilFixed {
 
-        Given("a submission belonging to the authenticated trader")
+      Given("a submission belonging to the authenticated trader")
 
-        val submissionId = createAcceptedSubmission()
+      val submissionId = createAcceptedSubmission()
 
-        And("a bearer token for a different EORI")
+      And("a bearer token for a different EORI")
 
-        val otherToken =
-          service
-            .getBearerToken(
-              AuthStubRequest(
-                credId = "other-cred-id",
-                enrolments = Seq(AuthStubEnrolment("HMRC-CUS-ORG", Seq(AuthStubIdentifier("EORINumber", "GB99999999"))))
-              )
+      val otherToken =
+        service
+          .getBearerToken(
+            AuthStubRequest(
+              credId = "other-cred-id",
+              enrolments = Seq(AuthStubEnrolment("HMRC-CUS-ORG", Seq(AuthStubIdentifier("EORINumber", "GB99999999"))))
             )
-            .futureValue
+          )
+          .futureValue
 
-        When("the other trader submits an amendment for that submissionId")
+      When("the other trader submits an amendment for that submissionId")
 
-        val response =
-          service
-            .submitMessageWithCorrelationId(
-              Ie507PayloadBuilder.build(amendedFields(submissionId)),
-              otherToken,
-              newCorrelationId()
-            )
-            .futureValue
+      val response =
+        service
+          .submitMessageWithCorrelationId(
+            Ie507PayloadBuilder.build(amendedFields(submissionId)),
+            otherToken,
+            newCorrelationId()
+          )
+          .futureValue
 
-        Then("the amendment is rejected")
+      Then("the amendment is rejected")
 
-        response.status should (be >= 400 and be < 500)
+      response.status should (be >= 400 and be < 500)
 
-        And("the original trader's submission is unchanged and still retrievable")
+      And("the original trader's submission is unchanged and still retrievable")
 
-        val original = service.getSubmission(submissionId, bearerToken).futureValue
-        original.status                               shouldBe 200
-        tagValue(original.body, "discrepanciesExist") shouldBe Some("0")
-      }
+      val original = service.getSubmission(submissionId, bearerToken).futureValue
+      original.status                               shouldBe 200
+      tagValue(original.body, "discrepanciesExist") shouldBe Some("0")
     }
 
     // Blocked: the backend saves every message as Standard, not Amend,
