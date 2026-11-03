@@ -15,6 +15,7 @@
  */
 
 package uk.gov.hmrc.api.specs
+package submit
 
 import org.scalatest.BeforeAndAfterAll
 import uk.gov.hmrc.api.helpers.{Ie507Fields, Ie507PayloadBuilder, NotificationPayloadBuilder}
@@ -202,8 +203,6 @@ class AmendSubmissionSpec extends BaseSpec with BeforeAndAfterAll {
       response.status shouldBe 401
     }
 
-    // Known issue: the backend saves by submissionId only, so another EORI can overwrite this submission.
-    // Marked pendingUntilFixed until the backend is fixed (the bug ticket is AES-1093)
     Scenario("A trader cannot amend a submission belonging to another EORI") {
 
       Given("a submission belonging to the authenticated trader")
@@ -244,10 +243,31 @@ class AmendSubmissionSpec extends BaseSpec with BeforeAndAfterAll {
       tagValue(original.body, "discrepanciesExist") shouldBe Some("0")
     }
 
-    // Blocked: the backend saves every message as Standard, not Amend,
-    // so the status never becomes Amended (2).
     Scenario("An accepted amendment is shown with status Amended") {
-      pending
+
+      Given("an existing, accepted submission")
+
+      val submissionId = createAcceptedSubmission()
+
+      When("the trader sends an amendment (type 2) for the same submissionId")
+
+      val amendmentXml =
+        Ie507PayloadBuilder
+          .build(amendedFields(submissionId))
+          .replaceFirst("<type>1</type>", "<type>2</type>")
+
+      service
+        .submitMessageWithCorrelationId(amendmentXml, bearerToken, newCorrelationId())
+        .futureValue
+        .status shouldBe 202
+
+      Then("the amendment is accepted and the status becomes Amended (2)")
+
+      eventually {
+        val response = service.getSubmission(submissionId, bearerToken).futureValue
+        response.status                   shouldBe 200
+        tagValue(response.body, "status") shouldBe Some("2")
+      }
     }
   }
 }

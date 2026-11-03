@@ -15,24 +15,25 @@
  */
 
 package uk.gov.hmrc.api.specs
+package submit
 
 import org.scalatest.BeforeAndAfterAll
-import uk.gov.hmrc.api.helpers.GoodsReferenceXmlBuilder
+import uk.gov.hmrc.api.helpers.TransportDocumentXmlBuilder
 
-class SubmitMessageGoodsReferenceSpec extends BaseSpec with BeforeAndAfterAll {
+class SubmitMessageTransportDocumentSpec extends BaseSpec with BeforeAndAfterAll {
 
   private var bearerToken: String = _
 
   override def beforeAll(): Unit =
     bearerToken = service.getBearerToken.futureValue
 
-  Feature("Submit IE507 Message - GoodsReference list (AES-918)") {
+  Feature("Submit IE507 Message - TransportDocument list (AES-916)") {
 
-    Scenario("Minimal submission with a single GoodsReference entry submits and retrieves correctly") {
+    Scenario("Minimal submission with a single TransportDocument entry submits and retrieves correctly") {
 
-      Given("an IE507 payload with exactly one GoodsReference entry")
+      Given("an IE507 payload with one TransportDocument entry")
 
-      val submission = GoodsReferenceXmlBuilder.withCount(1)
+      val submission = TransportDocumentXmlBuilder.withCount(1)
 
       When("the payload is submitted")
 
@@ -43,23 +44,24 @@ class SubmitMessageGoodsReferenceSpec extends BaseSpec with BeforeAndAfterAll {
 
       submitResponse.status shouldBe 202
 
-      And("the submission can be retrieved with the GoodsReference entry intact")
+      And("the submission can be retrieved with the TransportDocument entry intact")
 
       val getResponse =
         service.getSubmission(submission.submissionId, bearerToken).futureValue
 
       getResponse.status shouldBe 200
       getResponse.body     should include("<sequenceNumber>1</sequenceNumber>")
-      getResponse.body     should include("<declarationGoodsItemNumber>1</declarationGoodsItemNumber>")
+      getResponse.body     should include("<type>1</type>")
+      getResponse.body     should include("<referenceNumber>REF-1</referenceNumber>")
     }
 
     Scenario(
-      "Submission with multiple GoodsReference entries is accepted and entries are returned in submitted order"
+      "Submission with multiple TransportDocument entries is accepted and entries are returned in submitted order"
     ) {
 
-      Given("an IE507 payload with 3 GoodsReference entries")
+      Given("an IE507 payload with 4 TransportDocument entries")
 
-      val submission = GoodsReferenceXmlBuilder.withCount(3)
+      val submission = TransportDocumentXmlBuilder.withCount(4)
 
       When("the payload is submitted")
 
@@ -70,7 +72,7 @@ class SubmitMessageGoodsReferenceSpec extends BaseSpec with BeforeAndAfterAll {
 
       submitResponse.status shouldBe 202
 
-      And("GET returns all 3 entries, in the order they were submitted")
+      And("GET returns all 4 entries, in the order they were submitted")
 
       val getResponse =
         service.getSubmission(submission.submissionId, bearerToken).futureValue
@@ -79,22 +81,34 @@ class SubmitMessageGoodsReferenceSpec extends BaseSpec with BeforeAndAfterAll {
 
       val body = getResponse.body
 
+      val referencePositions =
+        Seq(
+          "REF-1",
+          "REF-2",
+          "REF-3",
+          "REF-4"
+        ).map(body.indexOf)
+
+      referencePositions   should not contain -1
+      referencePositions shouldBe sorted
+
       val seqPositions =
         Seq(
           "<sequenceNumber>1</sequenceNumber>",
           "<sequenceNumber>2</sequenceNumber>",
-          "<sequenceNumber>3</sequenceNumber>"
+          "<sequenceNumber>3</sequenceNumber>",
+          "<sequenceNumber>4</sequenceNumber>"
         ).map(body.indexOf)
 
       seqPositions   should not contain -1
       seqPositions shouldBe sorted
     }
 
-    Scenario("Submission with a high volume of GoodsReference entries within the body-size limit is accepted") {
+    Scenario("Submission with 99 TransportDocument entries (at limit) is accepted") {
 
-      Given("an IE507 payload with 700 GoodsReference entries (~99.8KB, under the ~100KB body-size limit)")
+      Given("an IE507 payload with exactly 99 TransportDocument entries")
 
-      val submission = GoodsReferenceXmlBuilder.withCount(700)
+      val submission = TransportDocumentXmlBuilder.withCount(99)
 
       When("the payload is submitted")
 
@@ -105,30 +119,33 @@ class SubmitMessageGoodsReferenceSpec extends BaseSpec with BeforeAndAfterAll {
 
       response.status shouldBe 202
 
-      And("the submission can be retrieved with all 700 entries")
+      And("the submission can be retrieved with all 99 TransportDocument entries")
 
       val getResponse =
         service.getSubmission(submission.submissionId, bearerToken).futureValue
 
       getResponse.status shouldBe 200
-      getResponse.body     should include("<sequenceNumber>700</sequenceNumber>")
+      getResponse.body     should include("<sequenceNumber>99</sequenceNumber>")
+      getResponse.body     should include("<referenceNumber>REF-99</referenceNumber>")
     }
 
-    Scenario("Submission exceeding the request body-size limit is rejected") {
+    Scenario("Submission with 100 TransportDocument entries (over limit) is rejected") {
 
-      Given("an IE507 payload with 1000 GoodsReference entries (~141.8KB, over the ~100KB body-size limit)")
+      Given("an IE507 payload with 100 TransportDocument entries")
 
-      val submission = GoodsReferenceXmlBuilder.withCount(1000)
+      val submission = TransportDocumentXmlBuilder.withCount(100)
 
       When("the payload is submitted")
 
       val response =
         service.submitMessage(submission.xml, bearerToken).futureValue
 
-      Then("a request entity too large response is returned")
+      Then("a bad request response is returned")
 
-      response.status shouldBe 413
-      response.body     should include("Request Entity Too Large")
+      response.status shouldBe 400
+      response.body     should include("BAD_REQUEST")
+      response.body     should include("TransportDocument")
     }
   }
+
 }

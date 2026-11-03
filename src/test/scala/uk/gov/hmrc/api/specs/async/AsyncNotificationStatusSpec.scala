@@ -15,10 +15,12 @@
  */
 
 package uk.gov.hmrc.api.specs
+package async
 
 import uk.gov.hmrc.api.conf.TestEnvironment
 import uk.gov.hmrc.api.helpers.*
 import uk.gov.hmrc.http.HttpResponse
+import scala.concurrent.duration.*
 
 import java.util.UUID
 
@@ -123,9 +125,11 @@ class AsyncNotificationStatusSpec extends BaseSpec {
 
       And("it stays AWAITING because no notification is received")
 
-      (1 to 5).foreach { _ =>
-        Thread.sleep(1000)
-        statusInList(user, submissionId) shouldBe Some(AwaitingStatus)
+      val deadline = 5.seconds.fromNow
+
+      eventually {
+        statusInList(user, submissionId)                                                            shouldBe Some(AwaitingStatus)
+        withClue("The 5 seconds without a notification have not passed yet: ")(deadline.isOverdue() shouldBe true)
       }
 
       And("the single submission has status AWAITING and no errors")

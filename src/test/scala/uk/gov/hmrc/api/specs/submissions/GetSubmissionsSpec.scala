@@ -15,6 +15,7 @@
  */
 
 package uk.gov.hmrc.api.specs
+package submissions
 
 import java.util.UUID
 import org.scalatest.BeforeAndAfterAll

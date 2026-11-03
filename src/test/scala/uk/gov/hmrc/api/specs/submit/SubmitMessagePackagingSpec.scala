@@ -15,24 +15,25 @@
  */
 
 package uk.gov.hmrc.api.specs
+package submit
 
 import org.scalatest.BeforeAndAfterAll
-import uk.gov.hmrc.api.helpers.TransportDocumentXmlBuilder
+import uk.gov.hmrc.api.helpers.PackagingXmlBuilder
 
-class SubmitMessageTransportDocumentSpec extends BaseSpec with BeforeAndAfterAll {
+class SubmitMessagePackagingSpec extends BaseSpec with BeforeAndAfterAll {
 
   private var bearerToken: String = _
 
   override def beforeAll(): Unit =
     bearerToken = service.getBearerToken.futureValue
 
-  Feature("Submit IE507 Message - TransportDocument list (AES-916)") {
+  Feature("Submit IE507 Message - Packaging list (AES-914)") {
 
-    Scenario("Minimal submission with a single TransportDocument entry submits and retrieves correctly") {
+    Scenario("Minimal submission with a single Packaging entry submits and retrieves correctly") {
 
-      Given("an IE507 payload with one TransportDocument entry")
+      Given("an IE507 payload with exactly one Packaging entry")
 
-      val submission = TransportDocumentXmlBuilder.withCount(1)
+      val submission = PackagingXmlBuilder.withCount(1)
 
       When("the payload is submitted")
 
@@ -43,24 +44,21 @@ class SubmitMessageTransportDocumentSpec extends BaseSpec with BeforeAndAfterAll
 
       submitResponse.status shouldBe 202
 
-      And("the submission can be retrieved with the TransportDocument entry intact")
+      And("the submission can be retrieved with the Packaging entry intact")
 
       val getResponse =
         service.getSubmission(submission.submissionId, bearerToken).futureValue
 
       getResponse.status shouldBe 200
       getResponse.body     should include("<sequenceNumber>1</sequenceNumber>")
-      getResponse.body     should include("<type>1</type>")
-      getResponse.body     should include("<referenceNumber>REF-1</referenceNumber>")
+      getResponse.body     should include("<shippingMarks>MARKS-1</shippingMarks>")
     }
 
-    Scenario(
-      "Submission with multiple TransportDocument entries is accepted and entries are returned in submitted order"
-    ) {
+    Scenario("Submission with multiple Packaging entries is accepted and entries are returned in submitted order") {
 
-      Given("an IE507 payload with 4 TransportDocument entries")
+      Given("an IE507 payload with 3 Packaging entries")
 
-      val submission = TransportDocumentXmlBuilder.withCount(4)
+      val submission = PackagingXmlBuilder.withCount(3)
 
       When("the payload is submitted")
 
@@ -71,7 +69,7 @@ class SubmitMessageTransportDocumentSpec extends BaseSpec with BeforeAndAfterAll
 
       submitResponse.status shouldBe 202
 
-      And("GET returns all 4 entries, in the order they were submitted")
+      And("GET returns all 3 entries, in the order they were submitted")
 
       val getResponse =
         service.getSubmission(submission.submissionId, bearerToken).futureValue
@@ -80,34 +78,28 @@ class SubmitMessageTransportDocumentSpec extends BaseSpec with BeforeAndAfterAll
 
       val body = getResponse.body
 
-      val referencePositions =
-        Seq(
-          "REF-1",
-          "REF-2",
-          "REF-3",
-          "REF-4"
-        ).map(body.indexOf)
+      val markPositions =
+        Seq("MARKS-1", "MARKS-2", "MARKS-3").map(body.indexOf)
 
-      referencePositions   should not contain -1
-      referencePositions shouldBe sorted
+      markPositions   should not contain -1
+      markPositions shouldBe sorted
 
       val seqPositions =
         Seq(
           "<sequenceNumber>1</sequenceNumber>",
           "<sequenceNumber>2</sequenceNumber>",
-          "<sequenceNumber>3</sequenceNumber>",
-          "<sequenceNumber>4</sequenceNumber>"
+          "<sequenceNumber>3</sequenceNumber>"
         ).map(body.indexOf)
 
       seqPositions   should not contain -1
       seqPositions shouldBe sorted
     }
 
-    Scenario("Submission with 99 TransportDocument entries (at limit) is accepted") {
+    Scenario("Submission with 99 Packaging entries (at limit) is accepted") {
 
-      Given("an IE507 payload with exactly 99 TransportDocument entries")
+      Given("an IE507 payload with exactly 99 Packaging entries")
 
-      val submission = TransportDocumentXmlBuilder.withCount(99)
+      val submission = PackagingXmlBuilder.withCount(99)
 
       When("the payload is submitted")
 
@@ -118,21 +110,20 @@ class SubmitMessageTransportDocumentSpec extends BaseSpec with BeforeAndAfterAll
 
       response.status shouldBe 202
 
-      And("the submission can be retrieved with all 99 TransportDocument entries")
+      And("the submission can be retrieved with all 99 entries")
 
       val getResponse =
         service.getSubmission(submission.submissionId, bearerToken).futureValue
 
       getResponse.status shouldBe 200
       getResponse.body     should include("<sequenceNumber>99</sequenceNumber>")
-      getResponse.body     should include("<referenceNumber>REF-99</referenceNumber>")
     }
 
-    Scenario("Submission with 100 TransportDocument entries (over limit) is rejected") {
+    Scenario("Submission with 100 Packaging entries (over limit) is rejected") {
 
-      Given("an IE507 payload with 100 TransportDocument entries")
+      Given("an IE507 payload with 100 Packaging entries")
 
-      val submission = TransportDocumentXmlBuilder.withCount(100)
+      val submission = PackagingXmlBuilder.withCount(100)
 
       When("the payload is submitted")
 
@@ -143,8 +134,7 @@ class SubmitMessageTransportDocumentSpec extends BaseSpec with BeforeAndAfterAll
 
       response.status shouldBe 400
       response.body     should include("BAD_REQUEST")
-      response.body     should include("TransportDocument")
+      response.body     should include("Packaging")
     }
   }
-
 }

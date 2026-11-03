@@ -15,6 +15,7 @@
  */
 
 package uk.gov.hmrc.api.specs
+package auth
 
 class AuthServiceSpec extends BaseSpec {
 

@@ -15,24 +15,25 @@
  */
 
 package uk.gov.hmrc.api.specs
+package submit
 
 import org.scalatest.BeforeAndAfterAll
-import uk.gov.hmrc.api.helpers.PackagingXmlBuilder
+import uk.gov.hmrc.api.helpers.GoodsReferenceXmlBuilder
 
-class SubmitMessagePackagingSpec extends BaseSpec with BeforeAndAfterAll {
+class SubmitMessageGoodsReferenceSpec extends BaseSpec with BeforeAndAfterAll {
 
   private var bearerToken: String = _
 
   override def beforeAll(): Unit =
     bearerToken = service.getBearerToken.futureValue
 
-  Feature("Submit IE507 Message - Packaging list (AES-914)") {
+  Feature("Submit IE507 Message - GoodsReference list (AES-918)") {
 
-    Scenario("Minimal submission with a single Packaging entry submits and retrieves correctly") {
+    Scenario("Minimal submission with a single GoodsReference entry submits and retrieves correctly") {
 
-      Given("an IE507 payload with exactly one Packaging entry")
+      Given("an IE507 payload with exactly one GoodsReference entry")
 
-      val submission = PackagingXmlBuilder.withCount(1)
+      val submission = GoodsReferenceXmlBuilder.withCount(1)
 
       When("the payload is submitted")
 
@@ -43,21 +44,23 @@ class SubmitMessagePackagingSpec extends BaseSpec with BeforeAndAfterAll {
 
       submitResponse.status shouldBe 202
 
-      And("the submission can be retrieved with the Packaging entry intact")
+      And("the submission can be retrieved with the GoodsReference entry intact")
 
       val getResponse =
         service.getSubmission(submission.submissionId, bearerToken).futureValue
 
       getResponse.status shouldBe 200
       getResponse.body     should include("<sequenceNumber>1</sequenceNumber>")
-      getResponse.body     should include("<shippingMarks>MARKS-1</shippingMarks>")
+      getResponse.body     should include("<declarationGoodsItemNumber>1</declarationGoodsItemNumber>")
     }
 
-    Scenario("Submission with multiple Packaging entries is accepted and entries are returned in submitted order") {
+    Scenario(
+      "Submission with multiple GoodsReference entries is accepted and entries are returned in submitted order"
+    ) {
 
-      Given("an IE507 payload with 3 Packaging entries")
+      Given("an IE507 payload with 3 GoodsReference entries")
 
-      val submission = PackagingXmlBuilder.withCount(3)
+      val submission = GoodsReferenceXmlBuilder.withCount(3)
 
       When("the payload is submitted")
 
@@ -77,12 +80,6 @@ class SubmitMessagePackagingSpec extends BaseSpec with BeforeAndAfterAll {
 
       val body = getResponse.body
 
-      val markPositions =
-        Seq("MARKS-1", "MARKS-2", "MARKS-3").map(body.indexOf)
-
-      markPositions   should not contain -1
-      markPositions shouldBe sorted
-
       val seqPositions =
         Seq(
           "<sequenceNumber>1</sequenceNumber>",
@@ -94,11 +91,11 @@ class SubmitMessagePackagingSpec extends BaseSpec with BeforeAndAfterAll {
       seqPositions shouldBe sorted
     }
 
-    Scenario("Submission with 99 Packaging entries (at limit) is accepted") {
+    Scenario("Submission with a high volume of GoodsReference entries within the body-size limit is accepted") {
 
-      Given("an IE507 payload with exactly 99 Packaging entries")
+      Given("an IE507 payload with 700 GoodsReference entries (~99.8KB, under the ~100KB body-size limit)")
 
-      val submission = PackagingXmlBuilder.withCount(99)
+      val submission = GoodsReferenceXmlBuilder.withCount(700)
 
       When("the payload is submitted")
 
@@ -109,31 +106,30 @@ class SubmitMessagePackagingSpec extends BaseSpec with BeforeAndAfterAll {
 
       response.status shouldBe 202
 
-      And("the submission can be retrieved with all 99 entries")
+      And("the submission can be retrieved with all 700 entries")
 
       val getResponse =
         service.getSubmission(submission.submissionId, bearerToken).futureValue
 
       getResponse.status shouldBe 200
-      getResponse.body     should include("<sequenceNumber>99</sequenceNumber>")
+      getResponse.body     should include("<sequenceNumber>700</sequenceNumber>")
     }
 
-    Scenario("Submission with 100 Packaging entries (over limit) is rejected") {
+    Scenario("Submission exceeding the request body-size limit is rejected") {
 
-      Given("an IE507 payload with 100 Packaging entries")
+      Given("an IE507 payload with 1000 GoodsReference entries (~141.8KB, over the ~100KB body-size limit)")
 
-      val submission = PackagingXmlBuilder.withCount(100)
+      val submission = GoodsReferenceXmlBuilder.withCount(1000)
 
       When("the payload is submitted")
 
       val response =
         service.submitMessage(submission.xml, bearerToken).futureValue
 
-      Then("a bad request response is returned")
+      Then("a request entity too large response is returned")
 
-      response.status shouldBe 400
-      response.body     should include("BAD_REQUEST")
-      response.body     should include("Packaging")
+      response.status shouldBe 413
+      response.body     should include("Request Entity Too Large")
     }
   }
 }
