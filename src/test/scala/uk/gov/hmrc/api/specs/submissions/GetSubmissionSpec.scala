@@ -15,6 +15,7 @@
  */
 
 package uk.gov.hmrc.api.specs
+package submissions
 
 import org.scalatest.BeforeAndAfterAll
 import uk.gov.hmrc.api.helpers.PayloadLoader
@@ -22,7 +23,7 @@ import uk.gov.hmrc.api.models.{AuthStubEnrolment, AuthStubIdentifier, AuthStubRe
 
 import java.util.UUID
 
-class CancelSubmissionSpec extends BaseSpec with BeforeAndAfterAll {
+class GetSubmissionSpec extends BaseSpec with BeforeAndAfterAll {
 
   private var bearerToken: String  = _
   private var submissionId: String = _
@@ -55,55 +56,33 @@ class CancelSubmissionSpec extends BaseSpec with BeforeAndAfterAll {
       )
   }
 
-  Feature("Cancel Submission by SubmissionId") {
+  Feature("Get Submission by SubmissionId") {
 
-    Scenario("Authenticated user can cancel a submission using a valid submissionId") {
+    Scenario("Authenticated user can retrieve a submission using a valid submissionId") {
 
       Given("a valid bearer token and a submissionId belonging to the authenticated user")
 
-      When("the cancel endpoint is called with that submissionId")
+      When("the submission endpoint is called with that submissionId")
 
       val response =
-        service
-          .cancelSubmission(submissionId, bearerToken)
-          .futureValue
-
-      Then("a no content response is returned")
-
-      response.status shouldBe 204
-
-      And("the submission can be retrieved successfully after cancellation")
-
-      val getResponse =
         service
           .getSubmission(submissionId, bearerToken)
           .futureValue
 
-      getResponse.status shouldBe 200
+      Then("a successful response is returned")
 
-      And("the retrieved submission reflects the cancelled status")
+      response.status shouldBe 200
 
-      getResponse.body should include("<submissionId>" + submissionId + "</submissionId>")
-      getResponse.body should include("<type>3</type>")
+      And("the response contains the submission root element")
+
+      response.body should include("<Submission>")
+
+      And("the response contains the matching submissionId")
+
+      response.body should include(s"<submissionId>$submissionId</submissionId>")
     }
 
-    Scenario("Cancelling an already cancelled submission is idempotent") {
-
-      Given("a submissionId that has already been cancelled")
-
-      When("the cancel endpoint is called again with that submissionId")
-
-      val response =
-        service
-          .cancelSubmission(submissionId, bearerToken)
-          .futureValue
-
-      Then("a no content response is still returned")
-
-      response.status shouldBe 204
-    }
-
-    Scenario("Cancelling a submission with a non-existent submissionId returns 404") {
+    Scenario("Retrieving a submission with a non-existent submissionId returns 404") {
 
       Given("a valid bearer token")
 
@@ -112,11 +91,11 @@ class CancelSubmissionSpec extends BaseSpec with BeforeAndAfterAll {
       val nonExistentId =
         UUID.randomUUID().toString
 
-      When("the cancel endpoint is called with that submissionId")
+      When("the submission endpoint is called with that submissionId")
 
       val response =
         service
-          .cancelSubmission(nonExistentId, bearerToken)
+          .getSubmission(nonExistentId, bearerToken)
           .futureValue
 
       Then("a not found response is returned")
@@ -130,7 +109,7 @@ class CancelSubmissionSpec extends BaseSpec with BeforeAndAfterAll {
       response.header("Content-Type") should contain("application/xml; charset=UTF-8")
     }
 
-    Scenario("Users cannot cancel submissions belonging to another EORI") {
+    Scenario("Users cannot retrieve submissions belonging to another EORI") {
 
       Given("a bearer token for a different EORI")
 
@@ -153,11 +132,11 @@ class CancelSubmissionSpec extends BaseSpec with BeforeAndAfterAll {
           )
           .futureValue
 
-      When("that user attempts to cancel a submission belonging to another EORI")
+      When("that user attempts to retrieve a submission belonging to another EORI")
 
       val response =
         service
-          .cancelSubmission(submissionId, otherUserToken)
+          .getSubmission(submissionId, otherUserToken)
           .futureValue
 
       Then("a not found response is returned, without revealing the submission exists")
@@ -165,28 +144,27 @@ class CancelSubmissionSpec extends BaseSpec with BeforeAndAfterAll {
       response.status shouldBe 404
     }
 
-    Scenario("Cancelling a submission without a bearer token returns 401") {
+    Scenario("Retrieving a submission without a bearer token returns 401") {
 
       Given("a submissionId belonging to the authenticated user")
 
-      When("the cancel endpoint is called without authentication")
+      When("the submission endpoint is called without authentication")
 
       val response =
         service
-          .cancelSubmissionWithoutAuth(submissionId)
+          .getSubmissionWithoutAuth(submissionId)
           .futureValue
 
       Then("an unauthorised response is returned")
 
       response.status shouldBe 401
 
-      // filter returns an empty body, unlike the AesErrorResponse XML used for 400/404.
       And("the response body is empty")
 
       response.body shouldBe empty
     }
 
-    Scenario("Cancelling a submission with an invalid bearer token returns 401") {
+    Scenario("Retrieving a submission with an invalid bearer token returns 401") {
 
       Given("a submissionId belonging to the authenticated user")
 
@@ -195,11 +173,11 @@ class CancelSubmissionSpec extends BaseSpec with BeforeAndAfterAll {
       val invalidToken =
         "not-a-valid-token-" + UUID.randomUUID().toString
 
-      When("the cancel endpoint is called with that token")
+      When("the submission endpoint is called with that token")
 
       val response =
         service
-          .cancelSubmission(submissionId, invalidToken)
+          .getSubmission(submissionId, invalidToken)
           .futureValue
 
       Then("an unauthorised response is returned")

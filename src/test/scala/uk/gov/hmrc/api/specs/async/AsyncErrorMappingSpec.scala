@@ -15,6 +15,7 @@
  */
 
 package uk.gov.hmrc.api.specs
+package async
 
 import uk.gov.hmrc.api.helpers.*
 

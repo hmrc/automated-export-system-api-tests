@@ -15,6 +15,7 @@
  */
 
 package uk.gov.hmrc.api.specs
+package submit
 
 import org.scalatest.BeforeAndAfterAll
 import uk.gov.hmrc.api.helpers.PayloadLoader
