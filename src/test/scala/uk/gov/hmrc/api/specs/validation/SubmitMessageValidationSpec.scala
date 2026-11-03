@@ -21,8 +21,8 @@ import uk.gov.hmrc.api.helpers.*
 
 import java.util.UUID
 
-/** Validation and error handling for POST /message (IE507A).
-  * Expected values come from the real backend behaviour (curl matrix, 3 Nov 2026).
+/** Validation and error handling for POST /message (IE507A). Expected values come from the real backend behaviour (curl
+  * matrix, 3 Nov 2026).
   */
 class SubmitMessageValidationSpec extends BaseSpec {
 
@@ -65,7 +65,7 @@ class SubmitMessageValidationSpec extends BaseSpec {
         response.status                                 shouldBe 400
         SubmissionXml.tagValue(response.body, "status") shouldBe Some("400")
         SubmissionXml.tagValue(response.body, "code")   shouldBe Some("BAD_REQUEST")
-        response.body should include(SchemaFailureMessage)
+        response.body                                     should include(SchemaFailureMessage)
 
         And("the response lists the failing line, column and message")
         response.body should include("<errors>")
@@ -86,7 +86,7 @@ class SubmitMessageValidationSpec extends BaseSpec {
       Then("the response is 400 BAD_REQUEST with an Invalid XML message")
       response.status                               shouldBe 400
       SubmissionXml.tagValue(response.body, "code") shouldBe Some("BAD_REQUEST")
-      response.body should include("Invalid XML")
+      response.body                                   should include("Invalid XML")
 
       And("there is no schema error list, because the XML never reached the schema validation")
       response.body should not include "<errors>"
@@ -103,7 +103,7 @@ class SubmitMessageValidationSpec extends BaseSpec {
       Then("the response is 400 BAD_REQUEST with an Invalid XML message")
       response.status                               shouldBe 400
       SubmissionXml.tagValue(response.body, "code") shouldBe Some("BAD_REQUEST")
-      response.body should include("Invalid XML")
+      response.body                                   should include("Invalid XML")
     }
 
     Scenario("A submission without a submissionId is accepted, because the field is optional") {
@@ -133,7 +133,7 @@ class SubmitMessageValidationSpec extends BaseSpec {
       Then("the response is 415 UNSUPPORTED_MEDIA_TYPE")
       response.status                               shouldBe 415
       SubmissionXml.tagValue(response.body, "code") shouldBe Some("UNSUPPORTED_MEDIA_TYPE")
-      response.body should include("Expecting xml body")
+      response.body                                   should include("Expecting xml body")
     }
 
     Scenario("A submission with Content-Type text/plain returns 415") {
@@ -147,7 +147,7 @@ class SubmitMessageValidationSpec extends BaseSpec {
       Then("the response is 415 UNSUPPORTED_MEDIA_TYPE")
       response.status                               shouldBe 415
       SubmissionXml.tagValue(response.body, "code") shouldBe Some("UNSUPPORTED_MEDIA_TYPE")
-      response.body should include("Expecting xml body")
+      response.body                                   should include("Expecting xml body")
     }
 
     Scenario("A submission with a charset that is not UTF-8 returns 415") {
@@ -162,7 +162,7 @@ class SubmitMessageValidationSpec extends BaseSpec {
       Then("the response is 415 with the charset message")
       response.status                               shouldBe 415
       SubmissionXml.tagValue(response.body, "code") shouldBe Some("UNSUPPORTED_MEDIA_TYPE")
-      response.body should include("charset is not UTF-8")
+      response.body                                   should include("charset is not UTF-8")
     }
 
     Scenario("A submission without X-Correlation-Id is accepted, because the backend generates one") {
@@ -229,7 +229,7 @@ class SubmitMessageValidationSpec extends BaseSpec {
       Then("the response is 404 NOT_FOUND")
       response.status                               shouldBe 404
       SubmissionXml.tagValue(response.body, "code") shouldBe Some("NOT_FOUND")
-      response.body should include("Submission not found")
+      response.body                                   should include("Submission not found")
 
       And("trader B cannot read trader A's submission")
       service.getSubmission(submissionId, tokenB).futureValue.status shouldBe 404
@@ -241,8 +241,7 @@ class SubmitMessageValidationSpec extends BaseSpec {
 
   Feature("Synchronous EIS errors (MRN based stub triggers)") {
 
-    // EisService.submitMessage drops the EIS error (leftMap(_ => SubmissionFailedError)),
-    // so the backend answers 500 for every MRN trigger below.
+    // The stubs return 401, 404, 500 or 400 for these MRN endings, but the backend answers 500 for all of them.
     Seq("A0", "A1", "A2", "A3").foreach { ending =>
       Scenario(s"An EIS error triggered by MRN ending $ending is returned as a generic 500") {
 
@@ -256,11 +255,12 @@ class SubmitMessageValidationSpec extends BaseSpec {
         Then("the response is 500 INTERNAL_SERVER_ERROR with the generic EIS failure message")
         response.status                               shouldBe 500
         SubmissionXml.tagValue(response.body, "code") shouldBe Some("INTERNAL_SERVER_ERROR")
-        response.body should include(EisFailureMessage)
+        response.body                                   should include(EisFailureMessage)
       }
     }
 
-    // Blocked by AES-744: the backend does not pass the EIS status (401/404/500/400) back to the caller.
+    // Pending: waiting for the stub timestamp fix and the developer's answer about the expected behaviour
+    // (should the EIS status code 401/404/500/400 be returned to the caller?).
     Scenario("Each EIS error is returned with its own status code and error body") {
       pending
     }
