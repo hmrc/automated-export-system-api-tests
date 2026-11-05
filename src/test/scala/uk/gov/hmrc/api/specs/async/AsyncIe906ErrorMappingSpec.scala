@@ -28,10 +28,10 @@ class AsyncIe906ErrorMappingSpec extends BaseSpec {
 
   private val TechnicalError = "There is a problem with the service"
 
-  private val MrnPath              = "Body.ExportOperation.MRN"
-  private val TypeOfLocationPath   = "Body.GoodsShipment.Consignment.LocationOfGoods.typeOfLocation"
-  private val AuthorisationNumPath = "Body.GoodsShipment.Consignment.LocationOfGoods.authorisationNumber"
-  private val ParentUcrIdPath      = "Body.GoodsShipment.Consignment.parentUCRID"
+  private val MrnPath              = "/CC507C/Body/ExportOperation/MRN"
+  private val TypeOfLocationPath   = "/CC507C/Body/GoodsShipment/Consignment/LocationOfGoods/typeOfLocation"
+  private val AuthorisationNumPath = "/CC507C/Body/GoodsShipment/Consignment/LocationOfGoods/authorisationNumber"
+  private val ParentUcrIdPath      = "/CC507C/Body/GoodsShipment/Consignment/parentUCRID"
 
   private val MucrPrefix = "GB/000000000000-123"
 

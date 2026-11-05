@@ -27,24 +27,21 @@ class AsyncErrorMappingSpec extends BaseSpec {
   private val AwaitingStatus = "0"
   private val RejectedStatus = "4"
 
-  private val OfficeOfExitPath         = "Body.CustomsOfficeOfExitActual.referenceNumber"
-  private val ParentUcrIdPath          = "Body.GoodsShipment.Consignment.parentUCRID"
-  private val NumberOfSealsPath        = "Body.GoodsShipment.Consignment.TransportEquipment.numberOfSeals"
-  private val AdditionalIdentifierPath = "Body.GoodsShipment.Consignment.LocationOfGoods.additionalIdentifier"
-  private val GrossMassPath            = "Body.GoodsShipment.GoodsItem.Commodity.GoodsMeasure.grossMass"
-  private val NetMassPath              = "Body.GoodsShipment.GoodsItem.Commodity.GoodsMeasure.netMass"
+  private val OfficeOfExitPath         = "/CC507C/Body/CustomsOfficeOfExitActual/referenceNumber"
+  private val ParentUcrIdPath          = "/CC507C/Body/GoodsShipment/Consignment/parentUCRID"
+  private val NumberOfSealsPath        = "/CC507C/Body/GoodsShipment/Consignment/TransportEquipment/numberOfSeals"
+  private val AdditionalIdentifierPath = "/CC507C/Body/GoodsShipment/Consignment/LocationOfGoods/additionalIdentifier"
+  private val GrossMassPath            = "/CC507C/Body/GoodsShipment/GoodsItem/Commodity/GoodsMeasure/grossMass"
+  private val NetMassPath              = "/CC507C/Body/GoodsShipment/GoodsItem/Commodity/GoodsMeasure/netMass"
 
   private val MucrPrefix = "GB/000000000000-123"
-
-  /** @param blockedByStubBug the stubs cannot trigger this code yet (wrong paths in XmlRequestBodyExtractor) */
   private final case class Ie917Case(
     rawCode: Int,
     expectedCode: String,
     expectedDescription: String,
     expectedPath: String,
     triggerValue: String,
-    fields: String => AsyncTriggerFields,
-    blockedByStubBug: Boolean = false
+    fields: String => AsyncTriggerFields
   )
 
   private val ie917Cases: Seq[Ie917Case] = Seq(
@@ -54,8 +51,7 @@ class AsyncErrorMappingSpec extends BaseSpec {
       "A field contains a value that is not permitted from the allowed list.",
       OfficeOfExitPath,
       "GB000000",
-      id => AsyncTriggerFields(id, officeOfExit = "GB000000"),
-      blockedByStubBug = true
+      id => AsyncTriggerFields(id, officeOfExit = "GB000000")
     ),
     Ie917Case(
       13,
@@ -111,8 +107,7 @@ class AsyncErrorMappingSpec extends BaseSpec {
       "The value provided is not valid for the expected data type.",
       OfficeOfExitPath,
       "GB000111",
-      id => AsyncTriggerFields(id, officeOfExit = "GB000111"),
-      blockedByStubBug = true
+      id => AsyncTriggerFields(id, officeOfExit = "GB000111")
     ),
     Ie917Case(
       51,
@@ -144,8 +139,7 @@ class AsyncErrorMappingSpec extends BaseSpec {
       "The value is below the minimum allowed limit.",
       GrossMassPath,
       "2.1",
-      id => AsyncTriggerFields(id, grossMass = Some("2.1"), netMass = Some("1.0")),
-      blockedByStubBug = true
+      id => AsyncTriggerFields(id, grossMass = Some("2.1"), netMass = Some("1.0"))
     ),
     Ie917Case(
       55,
@@ -153,8 +147,7 @@ class AsyncErrorMappingSpec extends BaseSpec {
       "The value exceeds the maximum allowed limit.",
       NetMassPath,
       "88.8",
-      id => AsyncTriggerFields(id, netMass = Some("88.8")),
-      blockedByStubBug = true
+      id => AsyncTriggerFields(id, netMass = Some("88.8"))
     ),
     Ie917Case(
       56,
@@ -162,8 +155,7 @@ class AsyncErrorMappingSpec extends BaseSpec {
       "The value must be greater than the minimum allowed limit.",
       GrossMassPath,
       "1.1",
-      id => AsyncTriggerFields(id, grossMass = Some("1.1"), netMass = Some("1.0")),
-      blockedByStubBug = true
+      id => AsyncTriggerFields(id, grossMass = Some("1.1"), netMass = Some("1.0"))
     ),
     Ie917Case(
       57,
@@ -171,8 +163,7 @@ class AsyncErrorMappingSpec extends BaseSpec {
       "The value must be less than the maximum allowed limit.",
       NetMassPath,
       "99.9",
-      id => AsyncTriggerFields(id, netMass = Some("99.9")),
-      blockedByStubBug = true
+      id => AsyncTriggerFields(id, netMass = Some("99.9"))
     )
   )
 
@@ -232,10 +223,7 @@ class AsyncErrorMappingSpec extends BaseSpec {
 
         Then("GET submission returns status REJECTED (4) with the mapped error")
 
-        // Stub bug: XmlRequestBodyExtractor uses Body.CustomsOfficeOExitActual and Body.GoodsItem,
-        // so codes 12, 50 and 54-57 are never triggered. Replace this pending with verify(testCase) once the stubs are fixed.
-        if (testCase.blockedByStubBug) pending
-        else verify(testCase)
+        verify(testCase)
       }
     }
   }
