@@ -28,10 +28,10 @@ class AsyncIe906ErrorMappingSpec extends BaseSpec {
 
   private val TechnicalError = "There is a problem with the service"
 
-  private val MrnPath              = "Body.ExportOperation.MRN"
-  private val TypeOfLocationPath   = "Body.GoodsShipment.Consignment.LocationOfGoods.typeOfLocation"
-  private val AuthorisationNumPath = "Body.GoodsShipment.Consignment.LocationOfGoods.authorisationNumber"
-  private val ParentUcrIdPath      = "Body.GoodsShipment.Consignment.parentUCRID"
+  private val MrnPath              = "/CC507C/Body/ExportOperation/MRN"
+  private val TypeOfLocationPath   = "/CC507C/Body/GoodsShipment/Consignment/LocationOfGoods/typeOfLocation"
+  private val AuthorisationNumPath = "/CC507C/Body/GoodsShipment/Consignment/LocationOfGoods/authorisationNumber"
+  private val ParentUcrIdPath      = "/CC507C/Body/GoodsShipment/Consignment/parentUCRID"
 
   private val MucrPrefix = "GB/000000000000-123"
 
@@ -58,6 +58,34 @@ class AsyncIe906ErrorMappingSpec extends BaseSpec {
 
   // MRN used by the stubs: IE906Rules look at the ending of the MRN
   private def mrnEnding(ending: String): String = s"26GB0000X6524786$ending"
+
+  private val UcrPath          = "/CC507C/Body/GoodsShipment/Consignment/referenceNumberUCR"
+  private val PackagingSeqPath = "/CC507C/Body/GoodsShipment/GoodsItem/Packaging/sequenceNumber"
+
+  // The stubs look at the ending of referenceNumberUCR
+  private def withUcrEnding(ending: String): String => String =
+    id => {
+      val xml = basePayload(id)
+      withClue("The payload has no <referenceNumberUCR> element: ")(xml should include("<referenceNumberUCR>"))
+      """<referenceNumberUCR>([^<]*)</referenceNumberUCR>""".r.replaceAllIn(
+        xml,
+        m =>
+          scala.util.matching.Regex.quoteReplacement(
+            s"<referenceNumberUCR>${m.group(1).dropRight(3)}$ending</referenceNumberUCR>"
+          )
+      )
+    }
+
+  // The stubs return code 92 when a sequenceNumber is 40
+  private def withPackagingSequenceNumber(value: String): String => String =
+    id => {
+      val xml = basePayload(id)
+      withClue("The payload has no <Packaging> element: ")(xml should include("<Packaging>"))
+      """(?s)(<Packaging>.*?<sequenceNumber>)[^<]*(</sequenceNumber>)""".r.findFirstMatchIn(xml) match {
+        case Some(m) => xml.substring(0, m.start) + m.group(1) + value + m.group(2) + xml.substring(m.end)
+        case None    => xml
+      }
+    }
 
   private val ie906Cases: Seq[Ie906Case] = Seq(
     Ie906Case(12, "CODELIST_VIOLATION", TechnicalError, TypeOfLocationPath, withTagValue("typeOfLocation", "E")),
@@ -103,20 +131,13 @@ class AsyncIe906ErrorMappingSpec extends BaseSpec {
     Ie906Case(90, "UNKNOWN_MRN", "MRN not found", MrnPath, withMrn(mrnEnding("B0"))),
     Ie906Case(93, "INVALID_MRN", "MRN is not valid", MrnPath, withMrn(mrnEnding("A4"))),
     Ie906Case(94, "INVALID_DISCREPANCIES", "Discrepancies mismatch", MrnPath, withMrn(mrnEnding("B4"))),
-    Ie906Case(95, "INVALID_AMENDMENT", "Invalid amendment", MrnPath, withMrn(mrnEnding("B5")))
-  )
-
-  // Stub bugs: IE906Rules read paths that do not exist in the IE507A message, so these codes are never triggered.
-  // - 8, 96-99: Body.GoodsShipment.Consignment.ReferenceNumberUCRID (the message has referenceNumberUCR)
-  // - 92: Body.GoodsShipment.GoodsItem.Commodity.Packaging.sequenceNumber (Packaging is directly under GoodsItem)
-  // Replace each pending with a real case once the stubs are fixed.
-  private val blockedByStubBug: Seq[(Int, String)] = Seq(
-    8  -> "INVALID_FORMAT_DUCR",
-    92 -> "MESSAGE_OUT_OF_SEQUENCE",
-    96 -> "DIVERSION_REJECTED_INVALID_DECLARATION",
-    97 -> "DIVERSION_REJECTED_UNKNOWN_MRN",
-    98 -> "DIVERSION_REJECTED_ALREADY_EXITED",
-    99 -> "DIVERSION_REJECTED_OTHER"
+    Ie906Case(95, "INVALID_AMENDMENT", "Invalid amendment", MrnPath, withMrn(mrnEnding("B5"))),
+    Ie906Case(8, "INVALID_FORMAT_DUCR", "Enter the DUCR in the correct format", UcrPath, withUcrEnding("000")),
+    Ie906Case(92, "MESSAGE_OUT_OF_SEQUENCE", TechnicalError, PackagingSeqPath, withPackagingSequenceNumber("40")),
+    Ie906Case(96, "DIVERSION_REJECTED_INVALID_DECLARATION", "Invalid declaration", UcrPath, withUcrEnding("001")),
+    Ie906Case(97, "DIVERSION_REJECTED_UNKNOWN_MRN", "Unknown MRN", UcrPath, withUcrEnding("002")),
+    Ie906Case(98, "DIVERSION_REJECTED_ALREADY_EXITED", "Already exited", UcrPath, withUcrEnding("003")),
+    Ie906Case(99, "DIVERSION_REJECTED_OTHER", "Diversion rejected other", UcrPath, withUcrEnding("004"))
   )
 
   private def verify(testCase: Ie906Case): Unit = {
@@ -172,10 +193,5 @@ class AsyncIe906ErrorMappingSpec extends BaseSpec {
       }
     }
 
-    blockedByStubBug.foreach { case (rawCode, expectedCode) =>
-      Scenario(s"IE906 error code $rawCode is returned as $expectedCode", AsyncNotificationTag) {
-        pending
-      }
-    }
   }
 }
