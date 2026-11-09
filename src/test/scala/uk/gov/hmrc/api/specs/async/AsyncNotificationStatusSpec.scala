@@ -193,7 +193,7 @@ class AsyncNotificationStatusSpec extends BaseSpec {
 
       val errors = SubmissionXml.errors(submissionBody(user, submissionId))
       errors             should have size 1
-      errors.head.path shouldBe Some("Body.ExportOperation.MRN")
+      errors.head.path shouldBe Some("/CC507C/Body/ExportOperation/MRN")
       errors.head.code   should not be Some("UNKNOWN_ERROR")
     }
 
@@ -221,7 +221,7 @@ class AsyncNotificationStatusSpec extends BaseSpec {
         SubmissionXml.ReturnedError(
           code = Some("NOT_SUPPORTED_IN_POSITION"),
           description = Some("The field or value is not valid in this part of the message."),
-          path = Some("Body.GoodsShipment.Consignment.TransportEquipment.numberOfSeals")
+          path = Some("/CC507C/Body/GoodsShipment/Consignment/TransportEquipment/numberOfSeals")
         )
       )
     }
@@ -284,7 +284,7 @@ class AsyncNotificationStatusSpec extends BaseSpec {
         NotificationErrorFields(
           code = "TOO_MANY_REPETITIONS",
           description = "Too many occurrences of the same element were provided.",
-          path = "Body.GoodsShipment.Consignment.parentUCRID",
+          path = "/CC507C/Body/GoodsShipment/Consignment/parentUCRID",
           originalValue = "GB/000000000000-12322"
         )
 
