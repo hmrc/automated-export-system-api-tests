@@ -59,8 +59,8 @@ class AsyncIe906ErrorMappingSpec extends BaseSpec {
   // MRN used by the stubs: IE906Rules look at the ending of the MRN
   private def mrnEnding(ending: String): String = s"26GB0000X6524786$ending"
 
-  private val UcrPath          = "/CC507C/Body/GoodsShipment/Consignment/referenceNumberUCR"
-  private val PackagingSeqPath = "/CC507C/Body/GoodsShipment/GoodsItem/Packaging/sequenceNumber"
+  private val UcrPath                   = "/CC507C/Body/GoodsShipment/Consignment/referenceNumberUCR"
+  private val TransportEquipmentSeqPath = "/CC507C/Body/GoodsShipment/Consignment/TransportEquipment/sequenceNumber"
 
   // The stubs look at the ending of referenceNumberUCR
   private def withUcrEnding(ending: String): String => String =
@@ -77,11 +77,11 @@ class AsyncIe906ErrorMappingSpec extends BaseSpec {
     }
 
   // The stubs return code 92 when a sequenceNumber is 40
-  private def withPackagingSequenceNumber(value: String): String => String =
+  private def withTransportEquipmentSequenceNumber(value: String): String => String =
     id => {
-      val xml = basePayload(id)
-      withClue("The payload has no <Packaging> element: ")(xml should include("<Packaging>"))
-      """(?s)(<Packaging>.*?<sequenceNumber>)[^<]*(</sequenceNumber>)""".r.findFirstMatchIn(xml) match {
+      val xml = AsyncPayloadBuilder.build(AsyncTriggerFields(id, numberOfSeals = Some(1)))
+      withClue("The payload has no <TransportEquipment> element: ")(xml should include("<TransportEquipment>"))
+      """(?s)(<TransportEquipment>.*?<sequenceNumber>)[^<]*(</sequenceNumber>)""".r.findFirstMatchIn(xml) match {
         case Some(m) => xml.substring(0, m.start) + m.group(1) + value + m.group(2) + xml.substring(m.end)
         case None    => xml
       }
@@ -133,7 +133,13 @@ class AsyncIe906ErrorMappingSpec extends BaseSpec {
     Ie906Case(94, "INVALID_DISCREPANCIES", "Discrepancies mismatch", MrnPath, withMrn(mrnEnding("B4"))),
     Ie906Case(95, "INVALID_AMENDMENT", "Invalid amendment", MrnPath, withMrn(mrnEnding("B5"))),
     Ie906Case(8, "INVALID_FORMAT_DUCR", "Enter the DUCR in the correct format", UcrPath, withUcrEnding("000")),
-    Ie906Case(92, "MESSAGE_OUT_OF_SEQUENCE", TechnicalError, PackagingSeqPath, withPackagingSequenceNumber("40")),
+    Ie906Case(
+      92,
+      "MESSAGE_OUT_OF_SEQUENCE",
+      TechnicalError,
+      TransportEquipmentSeqPath,
+      withTransportEquipmentSequenceNumber("40")
+    ),
     Ie906Case(96, "DIVERSION_REJECTED_INVALID_DECLARATION", "Invalid declaration", UcrPath, withUcrEnding("001")),
     Ie906Case(97, "DIVERSION_REJECTED_UNKNOWN_MRN", "Unknown MRN", UcrPath, withUcrEnding("002")),
     Ie906Case(98, "DIVERSION_REJECTED_ALREADY_EXITED", "Already exited", UcrPath, withUcrEnding("003")),
