@@ -40,7 +40,6 @@ class SubmitMessageValidationSpec extends BaseSpec {
   }
 
   private val SchemaFailureMessage = "XML failed schema validation"
-  private val EisFailureMessage    = "Failed to submit IE507 message to EIS"
 
   Feature("Mandatory field and invalid payload validation (XSD)") {
 
@@ -241,9 +240,16 @@ class SubmitMessageValidationSpec extends BaseSpec {
 
   Feature("Synchronous EIS errors (MRN based stub triggers)") {
 
-    // The stubs return 401, 404, 500 or 400 for these MRN endings, but the backend answers 500 for all of them.
-    Seq("A0", "A1", "A2", "A3").foreach { ending =>
-      Scenario(s"An EIS error triggered by MRN ending $ending is returned as a generic 500") {
+    // The stubs return 401, 404, 500 or 400 for these MRN endings, and the backend returns the same status and body.
+    val expectedEisErrors = Seq(
+      ("A0", 401, "UNAUTHORIZED"),
+      ("A1", 404, "NOT_FOUND"),
+      ("A2", 500, "INTERNAL_SERVER_ERROR"),
+      ("A3", 400, "VALIDATION_ERROR")
+    )
+
+    expectedEisErrors.foreach { case (ending, expectedStatus, expectedMessage) =>
+      Scenario(s"An EIS error triggered by MRN ending $ending is returned with status $expectedStatus") {
 
         Given("an authenticated trader")
         val token = newToken()
@@ -252,17 +258,12 @@ class SubmitMessageValidationSpec extends BaseSpec {
         val payload  = validPayload().replaceAll("A9</MRN>", s"$ending</MRN>")
         val response = service.submitMessage(payload, token).futureValue
 
-        Then("the response is 500 INTERNAL_SERVER_ERROR with the generic EIS failure message")
-        response.status                               shouldBe 500
-        SubmissionXml.tagValue(response.body, "code") shouldBe Some("INTERNAL_SERVER_ERROR")
-        response.body                                   should include(EisFailureMessage)
+        Then(s"the response is $expectedStatus $expectedMessage with the EIS error body")
+        response.status shouldBe expectedStatus
+        response.body     should include(s"<errorCode>$expectedStatus</errorCode>")
+        response.body     should include(s"<errorMessage>$expectedMessage</errorMessage>")
+        response.body     should include("<source>AES front end</source>")
       }
-    }
-
-    // Pending: waiting for the stub timestamp fix and the developer's answer about the expected behaviour
-    // (should the EIS status code 401/404/500/400 be returned to the caller?).
-    Scenario("Each EIS error is returned with its own status code and error body") {
-      pending
     }
   }
 }
