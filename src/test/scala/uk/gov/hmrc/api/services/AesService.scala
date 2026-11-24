@@ -121,6 +121,18 @@ class AesService(client: HttpClientV2)(implicit ec: ExecutionContext) {
       .execute[HttpResponse]
   }
 
+  def getCodeList(
+    path: String
+  ): Future[HttpResponse] = {
+
+    implicit val hc: HeaderCarrier =
+      HeaderCarrier()
+
+    client
+      .get(URI.create(s"$baseUrl/codelist/$path").toURL)
+      .execute[HttpResponse]
+  }
+
   def getSubmissionsWithoutAuth: Future[HttpResponse] = {
 
     implicit val hc: HeaderCarrier =

@@ -40,6 +40,11 @@ class ServiceFactory @Inject() (
   ) =
     authService.getBearerToken(request)
 
+  def getCodeList(
+    path: String
+  ) =
+    aesService.getCodeList(path)
+
   def submitMessage(
     xml: String,
     bearerToken: String
